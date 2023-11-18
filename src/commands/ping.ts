@@ -6,14 +6,10 @@ import { logContext, makeLogger } from '../util/logger';
 const log = makeLogger(module);
 
 export class PingCommand implements Command {
-    private readonly _data: SlashCommandBuilder;
+    public readonly data: SlashCommandBuilder;
 
     constructor() {
-        this._data = new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!');
-    }
-
-    get data() {
-        return { name: this._data.name, description: this._data.description };
+        this.data = new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!');
     }
 
     async execute(interaction: Interaction): Promise<void> {
