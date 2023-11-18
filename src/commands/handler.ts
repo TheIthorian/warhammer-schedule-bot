@@ -1,11 +1,12 @@
+import { InteractionRouter } from './../types';
 import { SpamProtection } from './../spam/types';
-import { CacheType, ChatInputCommandInteraction, Collection, Interaction } from 'discord.js';
+import { CacheType, ChatInputCommandInteraction, Collection } from 'discord.js';
 import { logContext, makeLogger } from '../util/logger';
 import { Command } from './types';
 
 const log = makeLogger(module);
 
-export class InteractionHandler {
+export class CommandInteractionRouter implements InteractionRouter {
     private readonly commandsByName = new Collection<string, Command>();
 
     constructor(private readonly commands: Array<Command>, private readonly spamProtection: SpamProtection) {
@@ -14,9 +15,8 @@ export class InteractionHandler {
         }
     }
 
-    async handle(interaction: Interaction): Promise<void> {
-        if (!interaction.isChatInputCommand()) return;
-        const ctx = logContext(`${InteractionHandler.name}.${this.handle.name}`, {});
+    async handle(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
+        const ctx = logContext(`${CommandInteractionRouter.name}.${this.handle.name}`, {});
 
         const command = this.commandsByName.get(interaction.commandName);
 
@@ -31,11 +31,14 @@ export class InteractionHandler {
             await this.handleSpamError(interaction, spamValidationResult.message);
             return;
         }
+        log.info(`${ctx} spam validation passed`);
 
         try {
+            log.info(`${ctx} executing command`);
             await command.execute(interaction);
         } catch (error) {
             log.error(`${ctx}`, error);
+            console.error(error);
             await this.handleError(interaction);
         }
     }

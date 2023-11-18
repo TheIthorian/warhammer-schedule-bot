@@ -1,7 +1,8 @@
+import { ScheduleCommand } from './schedule';
 import { linearSpamProtection } from './../spam';
-import { InteractionHandler } from './handler';
+import { CommandInteractionRouter } from './handler';
 import { PingCommand } from './ping';
 import { Command } from './types';
 
-export const commands: Array<Command> = [new PingCommand()];
-export const interactionHandler = new InteractionHandler(commands, linearSpamProtection);
+export const commands: Array<Command> = [new PingCommand(), new ScheduleCommand()];
+export const commandInteractionRouter = new CommandInteractionRouter(commands, linearSpamProtection);
