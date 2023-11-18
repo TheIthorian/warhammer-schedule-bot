@@ -9,3 +9,7 @@ https://discordjs.guide/creating-your-bot/command-deployment.html#guild-commands
 | command | description        |
 | ------- | ------------------ |
 | /ping   | Replies with Pong! |
+
+## Ideas
+
+Usa AI to search pdf https://github.com/imartinez/privateGPT
