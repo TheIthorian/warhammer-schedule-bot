@@ -1,23 +1,20 @@
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { config } from './config';
-import { registerCommands } from './command';
+import { interactionHandler } from './commands';
+import { makeLogger } from 'util/logger';
+
+const log = makeLogger(module);
 
 export async function start() {
-    const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+    const client: Client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-    client.on('ready', () => {
-        console.log(`Logged in as ${client.user?.tag}!`);
+    client.on(Events.ClientReady, () => {
+        log.info(`Client Ready - logged in as ${client.user?.tag}!`);
     });
 
-    client.on('interactionCreate', async interaction => {
-        if (!interaction.isChatInputCommand()) return;
-
-        if (interaction.commandName === 'ping') {
-            await interaction.reply('Pong!');
-        }
+    client.on(Events.InteractionCreate, async interaction => {
+        await interactionHandler.handle(interaction);
     });
 
     client.login(config.botToken);
-
-    await registerCommands();
 }
