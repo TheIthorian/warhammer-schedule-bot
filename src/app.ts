@@ -1,7 +1,7 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { config } from './config';
 import { interactionHandler } from './commands';
-import { makeLogger } from 'util/logger';
+import { makeLogger } from './util/logger';
 
 const log = makeLogger(module);
 
