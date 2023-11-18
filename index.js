@@ -1,1 +1,3 @@
-console.log('TODO');
+import { start } from './src/app';
+
+start();
