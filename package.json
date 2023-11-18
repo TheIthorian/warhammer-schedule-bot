@@ -4,8 +4,10 @@
     "description": "discord bot to manage scheduling for fantasy roleplay",
     "main": "index.js",
     "scripts": {
-        "build": "index.js",
-        "start": "index.js",
+        "build": "tsc --outDir './build'",
+        "start": "ts-node index.js",
+        "deploy-commands": "ts-node src/scripts/register-commands.ts",
+        "invite-link": "ts-node src/scripts/invite.ts",
         "prettier": "npx prettier -w ."
     },
     "repository": {
@@ -27,11 +29,13 @@
         "@types/prettier": "^2.7.2",
         "eslint": "^8.30.0",
         "eslint-config-next": "13.1.6",
-        "prettier": "^2.8.1"
+        "prettier": "^2.8.1",
+        "typescript": "^5.2.2"
     },
     "dependencies": {
         "discord.js": "^14.14.1",
         "dotenv": "^16.3.1",
+        "ts-node": "^10.9.1",
         "tsc": "^2.0.4"
     }
 }
