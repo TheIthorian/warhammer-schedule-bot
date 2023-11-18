@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { config } from './config';
+import { registerCommands } from './command';
 
 export async function start() {
     const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -17,4 +18,6 @@ export async function start() {
     });
 
     client.login(config.botToken);
+
+    await registerCommands();
 }
