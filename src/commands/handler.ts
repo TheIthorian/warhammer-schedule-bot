@@ -31,7 +31,6 @@ export class CommandInteractionRouter implements InteractionRouter {
             await this.handleSpamError(interaction, spamValidationResult.message);
             return;
         }
-        log.info(`${ctx} spam validation passed`);
 
         try {
             log.info(`${ctx} executing command`);
