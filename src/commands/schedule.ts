@@ -53,25 +53,12 @@ export class ScheduleCommand implements Command {
 
         // Collect responses
         collector.on('collect', async collectionResponse => {
-            log.info(`${ctx} collected response from ${collectionResponse.user.id} for message ${messageId}`);
-
-            const userScheduleResponse: ScheduleResponse = {
-                days: collectionResponse.values,
-                userId: collectionResponse.user.id,
-                responseTime: collectionResponse.createdTimestamp,
-            };
-
-            await collectionResponse.reply(
-                `${userScheduleResponse.userId} has selected ${userScheduleResponse.days.join(', ')}!`
-            );
-
-            this.partyScheduler.addResponse(guildId, userScheduleResponse);
-
-            if (this.partyScheduler.hasEveryoneResponded(guildId, interaction.guild.memberCount)) {
-                log.info(`${ctx} scheduling is finished`);
-                await interaction.followUp({
-                    content: 'Everyone has replied!',
-                });
+            try {
+                await this.handleCollect(collectionResponse, interaction, { messageId, guildId });
+            } catch (err) {
+                const error = err as Error;
+                log.error(`${ctx} error collecting response ${error}`);
+                console.error(error);
             }
         });
     }
@@ -108,5 +95,33 @@ export class ScheduleCommand implements Command {
         });
 
         return { collector, response };
+    }
+
+    private async handleCollect(
+        collectionResponse: StringSelectMenuInteraction<CacheType>,
+        interaction: ChatInputCommandInteraction<CacheType>,
+        { messageId, guildId }: { messageId: string; guildId: string }
+    ) {
+        const ctx = logContext(`${ScheduleCommand.name}.${this.handleCollect.name}`);
+        log.info(`${ctx} collected response from ${collectionResponse.user.id} for message ${messageId}`);
+
+        const userScheduleResponse: ScheduleResponse = {
+            days: collectionResponse.values,
+            userId: collectionResponse.user.id,
+            responseTime: collectionResponse.createdTimestamp,
+        };
+
+        await collectionResponse.reply(
+            `${userScheduleResponse.userId} has selected ${userScheduleResponse.days.join(', ')}!`
+        );
+
+        this.partyScheduler.addResponse(guildId, userScheduleResponse);
+
+        if (this.partyScheduler.hasEveryoneResponded(guildId, interaction.guild.memberCount)) {
+            log.info(`${ctx} scheduling is finished`);
+            await interaction.followUp({
+                content: 'Everyone has replied!',
+            });
+        }
     }
 }
