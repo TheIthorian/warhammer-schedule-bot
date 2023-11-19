@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import schedule from 'node-schedule'; // https://www.npmjs.com/package/node-schedule
 
-export class Scheduler {
+export class JobScheduler {
     private readonly jobs = new Map<string, schedule.Job>();
 
     public scheduleJob(date: Date, callback: CallableFunction): string {
