@@ -3,6 +3,8 @@ import { createWriteStream } from 'fs';
 import { pino } from 'pino';
 
 const DEFAULT_LEVEL = 'debug';
+const BASE_DIR_NAME = 'warhammer-schedule-bot';
+const LOG_FILE = 'app.log';
 
 interface LogFunction {
     <T extends object>(obj: T, msg?: string, ...args: any[]): void;
@@ -20,22 +22,13 @@ export interface Logger {
     silent?: LogFunction;
 }
 
-export function makeLogger(
-    module: Module | undefined,
-    level = DEFAULT_LEVEL
-): Logger {
-    const streams = [
-        { stream: process.stdout },
-        { stream: createWriteStream('app.log', { flags: 'a' }) },
-    ];
+export function makeLogger(module: Module | undefined, level = DEFAULT_LEVEL): Logger {
+    const streams = [{ stream: process.stdout }, { stream: createWriteStream(LOG_FILE, { flags: 'a' }) }];
 
     let name = 'unknown';
     if (module?.filename) {
-        const modulePath = module.filename?.split('apps')[1]?.split('\\') ?? [];
-        const lastPart = [
-            modulePath[modulePath.length - 2],
-            modulePath[modulePath.length - 1],
-        ];
+        const modulePath = module.filename?.split(BASE_DIR_NAME)[1]?.split('\\') ?? [];
+        const lastPart = [modulePath[modulePath.length - 2], modulePath[modulePath.length - 1]];
         name = `${lastPart.join('/')}`;
     }
 
