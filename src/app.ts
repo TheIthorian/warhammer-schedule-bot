@@ -1,4 +1,3 @@
-import { messageComponentInteractionRouter } from './message-interactions/index';
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { config } from './config';
 import { commandInteractionRouter } from './commands';
