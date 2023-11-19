@@ -28,8 +28,10 @@ export class PartyScheduler {
         this.inProcessScheduling.delete(guildId);
     }
 
-    public closeSchedule(guildId: string): void {
+    public closeSchedule(guildId: string): Map<string, ScheduleResponse> {
+        const responses = this.inProcessScheduling.get(guildId).responses;
         this.inProcessScheduling.delete(guildId);
+        return responses;
     }
 
     public addSchedulingMessage(guildId: string, messageId: string, messageUrl: string): void {
