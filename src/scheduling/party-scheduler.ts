@@ -28,6 +28,10 @@ export class PartyScheduler {
         this.inProcessScheduling.delete(guildId);
     }
 
+    public closeSchedule(guildId: string): void {
+        this.inProcessScheduling.delete(guildId);
+    }
+
     public addSchedulingMessage(guildId: string, messageId: string, messageUrl: string): void {
         const ctx = logContext(`${PartyScheduler.name}.${this.addSchedulingMessage.name}`, { guildId, messageId }, log);
 
