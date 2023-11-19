@@ -68,13 +68,30 @@ export class ScheduleCommand implements Command {
 
         buttonCollector.once('collect', async collectionResponse => {
             try {
-                if (collectionResponse.customId === 'cancel')
-                    await this.handleCollectCancel(collectionResponse, { messageId, guildId });
-                if (collectionResponse.customId === 'close')
-                    await this.handleCollectClosePoll(collectionResponse, { messageId, guildId });
+                let results: IterableIterator<ScheduleResponse>;
+                const wasCancelled = collectionResponse.customId === 'cancel';
+                if (wasCancelled) {
+                    log.info(`${ctx} collected response from ${collectionResponse.user.id} to cancel poll`);
+                    this.partyScheduler.cancelSchedule(guildId);
+                    await collectionResponse.reply(`${collectionResponse.user} has cancelled the poll`);
+                } else {
+                    log.info(`${ctx} collected response from ${collectionResponse.user.id} to close poll`);
+                    results = this.partyScheduler.closeSchedule(guildId).values();
+                    await collectionResponse.reply(`${collectionResponse.user} has closed the poll`);
+                }
 
                 buttonCollector.stop();
-                handleFinishPoll(collectionResponse.customId === 'cancel');
+
+                const resultArray = [];
+                for (const r of results) {
+                    resultArray.push(r);
+                }
+
+                handleFinishPoll();
+
+                await interaction.followUp(
+                    `The poll was ${wasCancelled ? 'cancelled' : 'closed'}.\n${JSON.stringify(resultArray)}`
+                );
             } catch (err) {
                 log.error(`${ctx} error collecting cancel button response ${err}`);
                 console.error(err);
@@ -94,7 +111,7 @@ export class ScheduleCommand implements Command {
         daySelectCollector: InteractionCollector<StringSelectMenuInteraction<CacheType>>;
         buttonCollector: InteractionCollector<ButtonInteraction<CacheType>>;
         response: InteractionResponse<boolean>;
-        handleFinishPoll: (isCancelled: boolean) => void;
+        handleFinishPoll: () => void;
     }> {
         const select = new StringSelectMenuBuilder()
             .setCustomId('scheduler')
@@ -111,8 +128,9 @@ export class ScheduleCommand implements Command {
             .setStyle(ButtonStyle.Secondary);
         const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents([closePollButton, cancelButton]);
 
+        const pollCreationText = 'Hey @everyone 👋 Please select the days that you are available next week';
         const response = await interaction.reply({
-            content: 'Hey everyone 👋 Please select the days that you are available next week',
+            content: pollCreationText,
             components: [row, row2],
         });
 
@@ -126,10 +144,9 @@ export class ScheduleCommand implements Command {
             time: TIME_TO_REACT_MINUTES * 60 * 1_000,
         });
 
-        const handleFinishPoll = (isCancelled: boolean) => {
-            row2.components.forEach(button => button.setDisabled(true));
-            const reason = isCancelled ? 'The poll has been cancelled' : 'The poll is finished';
-            interaction.editReply({ content: reason, components: [row] });
+        const handleFinishPoll = () => {
+            row.components.forEach(c => c.setDisabled(true));
+            interaction.editReply({ components: [row], content: `${pollCreationText}\n(this poll has ended)` });
         };
 
         return { daySelectCollector, buttonCollector, response, handleFinishPoll };
@@ -149,41 +166,18 @@ export class ScheduleCommand implements Command {
             responseTime: collectionResponse.createdTimestamp,
         };
 
-        await collectionResponse.reply(
-            `${collectionResponse.user} has selected ${userScheduleResponse.days.join(', ')}!`
-        );
+        await collectionResponse.reply({
+            content: `You have selected ${userScheduleResponse.days.join(', ')}!`,
+            ephemeral: true,
+        });
 
         this.partyScheduler.addResponse(guildId, userScheduleResponse);
 
         if (this.partyScheduler.hasEveryoneResponded(guildId, interaction.guild.memberCount)) {
             log.info(`${ctx} scheduling is finished`);
             await interaction.followUp({
-                content: 'Everyone has replied!',
+                content: 'Everyone has replied! You may close the poll',
             });
         }
-    }
-
-    private async handleCollectCancel(
-        collectionResponse: ButtonInteraction<CacheType>,
-        { messageId, guildId }: { messageId: string; guildId: string }
-    ) {
-        const ctx = logContext(`${ScheduleCommand.name}.${this.handleCollectCancel.name}`);
-        log.info(`${ctx} collected response from ${collectionResponse.user.id} to cancel poll`);
-
-        this.partyScheduler.cancelSchedule(guildId);
-
-        await collectionResponse.reply(`${collectionResponse.user} has cancelled the poll`);
-    }
-
-    private async handleCollectClosePoll(
-        collectionResponse: ButtonInteraction<CacheType>,
-        { messageId, guildId }: { messageId: string; guildId: string }
-    ) {
-        const ctx = logContext(`${ScheduleCommand.name}.${this.handleCollectClosePoll.name}`);
-        log.info(`${ctx} collected response from ${collectionResponse.user.id} to cancel poll`);
-
-        this.partyScheduler.closeSchedule(guildId);
-
-        await collectionResponse.reply(`${collectionResponse.user} has closed the poll`);
     }
 }
