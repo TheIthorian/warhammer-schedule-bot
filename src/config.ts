@@ -12,5 +12,5 @@ export const config = {
     clientId: assertResource(process.env.CLIENT_ID),
     clientSecret: assertResource(process.env.CLIENT_SECRET),
 
-    permissionsInt: 309237778496,
+    permissionsInt: 377957255232,
 };
