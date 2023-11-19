@@ -98,7 +98,7 @@ export class ScheduleCommand implements Command {
         const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 
         const response = await interaction.reply({
-            content: 'Select the days that you are available next week:',
+            content: 'Hey everyone 👋 Please select the days that you are available next week',
             components: [row],
         });
 
