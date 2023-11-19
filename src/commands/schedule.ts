@@ -8,7 +8,7 @@ import {
     StringSelectMenuOptionBuilder,
 } from 'discord.js';
 import { Command } from './types';
-import { getInteractionLogDetails } from './interaction-info';
+import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
 
 const log = makeLogger(module);
