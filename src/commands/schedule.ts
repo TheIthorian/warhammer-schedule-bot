@@ -67,7 +67,7 @@ export class ScheduleCommand implements Command {
 
             this.partyScheduler.addResponse(guildId, userScheduleResponse);
 
-            if (this.partyScheduler.hasEveryoneFinished(guildId, interaction.guild.memberCount)) {
+            if (this.partyScheduler.hasEveryoneResponded(guildId, interaction.guild.memberCount)) {
                 log.info(`${ctx} scheduling is finished`);
                 await interaction.followUp({
                     content: 'Everyone has replied!',

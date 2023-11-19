@@ -9,7 +9,7 @@ const log = makeLogger(module);
 export class PartyScheduler {
     private readonly inProcessScheduling = new Collection<string, Scheduling>();
 
-    public hasEveryoneFinished(guildId: string, guildMemberCount: number): boolean {
+    public hasEveryoneResponded(guildId: string, guildMemberCount: number): boolean {
         // TODO - this should be role based?
         const scheduling = this.getInProgressSchedule(guildId);
         const numberOfResponses = scheduling.responses.size;
