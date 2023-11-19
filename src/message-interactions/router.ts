@@ -1,4 +1,4 @@
-import { InteractionRouter } from './../types';
+import { InteractionRouter } from '../types';
 import { SpamProtection } from '../spam/types';
 import { AnySelectMenuInteraction, ButtonInteraction, CacheType, Collection } from 'discord.js';
 import { logContext, makeLogger } from '../util/logger';

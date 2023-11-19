@@ -1,5 +1,5 @@
-import { InteractionRouter } from './../types';
-import { SpamProtection } from './../spam/types';
+import { InteractionRouter } from '../types';
+import { SpamProtection } from '../spam/types';
 import { CacheType, ChatInputCommandInteraction, Collection } from 'discord.js';
 import { logContext, makeLogger } from '../util/logger';
 import { Command } from './types';

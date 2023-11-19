@@ -1,6 +1,6 @@
 import { ScheduleCommand } from './schedule';
 import { linearSpamProtection } from './../spam';
-import { CommandInteractionRouter } from './handler';
+import { CommandInteractionRouter } from './router';
 import { PingCommand } from './ping';
 import { Command } from './types';
 
