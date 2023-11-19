@@ -33,7 +33,7 @@ export class CommandInteractionRouter implements InteractionRouter {
         }
 
         try {
-            log.info(`${ctx} executing command`);
+            log.info(`${ctx} executing command [${command.data.name}]`);
             await command.execute(interaction);
         } catch (error) {
             log.error(`${ctx}`, error);

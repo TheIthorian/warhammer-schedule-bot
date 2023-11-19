@@ -1,6 +1,6 @@
 import { InteractionRouter } from '../types';
 import { SpamProtection } from '../spam/types';
-import { AnySelectMenuInteraction, ButtonInteraction, CacheType, Collection } from 'discord.js';
+import { AnySelectMenuInteraction, ButtonInteraction, CacheType } from 'discord.js';
 import { logContext, makeLogger } from '../util/logger';
 import { MessageComponentInteractionHandler } from './types';
 
