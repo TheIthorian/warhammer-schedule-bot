@@ -6,6 +6,7 @@
     "scripts": {
         "build": "tsc --outDir './build'",
         "start": "ts-node index.js | pino-pretty",
+        "test": "jest --forceExit",
         "deploy-commands": "ts-node src/scripts/register-commands.ts",
         "invite-link": "ts-node src/scripts/invite.ts",
         "prettier": "npx prettier -w ."
