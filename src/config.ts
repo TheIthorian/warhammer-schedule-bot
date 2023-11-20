@@ -13,4 +13,6 @@ export const config = {
     clientSecret: assertResource(process.env.CLIENT_SECRET),
 
     permissionsInt: 377957255232,
+
+    isLocal: process.env.NODE_ENV === 'local',
 };

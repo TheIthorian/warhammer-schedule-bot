@@ -1,6 +1,7 @@
 import Module from 'module';
 import { createWriteStream } from 'fs';
 import { pino } from 'pino';
+import { config } from '../config';
 
 const DEFAULT_LEVEL = 'debug';
 const BASE_DIR_NAME = 'warhammer-schedule-bot';
@@ -23,7 +24,10 @@ export interface Logger {
 }
 
 export function makeLogger(module: Module | undefined, level = DEFAULT_LEVEL): Logger {
-    const streams = [{ stream: process.stdout }, { stream: createWriteStream(LOG_FILE, { flags: 'a' }) }];
+    const streams = [{ stream: process.stdout }] as any[];
+    if (config.isLocal) {
+        streams.push({ stream: createWriteStream(LOG_FILE, { flags: 'a' }) });
+    }
 
     let name = 'unknown';
     if (module?.filename) {
