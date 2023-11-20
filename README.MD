@@ -14,7 +14,7 @@ npm start
 ## Deploying
 
 ```sh
-gcloud app deploy
+gcloud app deploy app.prod.yaml
 ```
 
 ## Commands
