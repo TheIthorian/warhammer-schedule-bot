@@ -5,21 +5,21 @@ import { ScheduleResponse } from '../types';
 describe('AsciiPollResultsFormatter', () => {
     const responseTime = new Date().getTime();
 
+    const formatter = new AsciiPollResultsFormatter();
+    const responses = new Map<string, ScheduleResponse>();
+    responses.set('user:1', {
+        days: ['Monday', 'Tuesday'],
+        userId: 'user:1',
+        responseTime,
+    });
+
+    responses.set('user:2', {
+        days: ['Tuesday', 'Wednesday'],
+        userId: 'user:2',
+        responseTime,
+    });
+
     test('getResults method returns the sorted results', () => {
-        const formatter = new AsciiPollResultsFormatter();
-        const responses = new Map<string, ScheduleResponse>();
-        responses.set('user:1', {
-            days: ['Monday', 'Tuesday'],
-            userId: 'user:1',
-            responseTime,
-        });
-
-        responses.set('user:2', {
-            days: ['Tuesday', 'Wednesday'],
-            userId: 'user:2',
-            responseTime,
-        });
-
         const sortedResults = formatter.getResults(responses);
 
         const expected: Array<{ day: DayOfTheWeek; userIds: string[] }> = [
@@ -36,12 +36,9 @@ describe('AsciiPollResultsFormatter', () => {
     });
 
     test('format method returns a formatted string of the results', () => {
-        const formatter = new AsciiPollResultsFormatter();
-        const responses = new Map<string, ScheduleResponse>();
-
         const formattedResult = formatter.format(responses);
 
-        expect(typeof formattedResult).toBe('string');
+        expect(formattedResult).toMatchSnapshot();
     });
 });
 

@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AsciiPollResultsFormatter format method returns a formatted string of the results 1`] = `
+"\`\`\`md
+(2)	Tuesday  	|████████████████████|
+(1)	Monday   	|██████████          |
+(1)	Wednesday	|██████████          |
+(0)	Friday   	|                    |
+(0)	Saturday 	|                    |
+(0)	Sunday   	|                    |
+(0)	Thursday 	|                    |\`\`\`"
+`;
