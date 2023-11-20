@@ -16,7 +16,7 @@ export class JobScheduler {
         const job = schedule.scheduleJob(id, date, () => this.handleJobCallback(callback));
         this.jobs.set(id, job);
 
-        log.info(`${ctx} job scheduled for ${date.toISOString()}`);
+        log.info(`${ctx} job scheduled for ${date.toISOString()} with id ${id}`);
 
         return id;
     }
