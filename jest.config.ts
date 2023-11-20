@@ -2,7 +2,7 @@ const config = {
     preset: 'ts-jest',
     moduleFileExtensions: ['js', 'json', 'ts'],
     rootDir: 'src',
-    testRegex: '.*.test.(t|j)s',
+    testRegex: '.*.test.(t|j)s$',
     transform: {
         '^.+\\.ts': ['ts-jest', { tsconfig: './tsconfig.json' }],
         '^.+\\.js': 'babel-jest',
