@@ -72,20 +72,21 @@ export class ScheduleCommand implements Command {
 
         buttonCollector.once('collect', async collectionResponse => {
             try {
-                const wasCancelled = collectionResponse.customId === 'cancel';
-                if (wasCancelled) {
-                    log.info(`${ctx} collected response from ${collectionResponse.user.id} to cancel poll`);
-                    await collectionResponse.reply(`${collectionResponse.user} has cancelled the poll`);
-                } else {
-                    log.info(`${ctx} collected response from ${collectionResponse.user.id} to close poll`);
-                    await collectionResponse.reply(`${collectionResponse.user} has closed the poll`);
-                }
-
                 buttonCollector.stop();
                 handleFinishPoll();
 
                 const results = this.partyScheduler.closeSchedule(guildId);
                 const formattedResults = this.pollResultsFormatter.format(results);
+
+                const wasCancelled = collectionResponse.customId === 'cancel';
+                if (wasCancelled) {
+                    log.info(`${ctx} collected response from ${collectionResponse.user.id} to cancel poll`);
+                    await collectionResponse.reply(`${collectionResponse.user} has cancelled the poll`);
+                    return;
+                } else {
+                    log.info(`${ctx} collected response from ${collectionResponse.user.id} to close poll`);
+                    await collectionResponse.reply(`${collectionResponse.user} has closed the poll`);
+                }
 
                 await interaction.followUp(
                     `The poll was ${wasCancelled ? 'cancelled' : 'closed'}.\n${formattedResults}`
