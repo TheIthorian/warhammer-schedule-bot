@@ -1,3 +1,4 @@
+import { RollCommand } from './roll';
 import { jobScheduler } from './../scheduling/index';
 import { DateParser } from './../util/date-parser';
 import { BookCommand } from './book';
@@ -17,5 +18,6 @@ export const commands: Array<Command> = [
     new PingCommand(),
     new ScheduleCommand(partyScheduler, pollResultsFormatter),
     new BookCommand(jobScheduler, dateParser),
+    new RollCommand(),
 ];
 export const commandInteractionRouter = new CommandInteractionRouter(commands, linearSpamProtection);
