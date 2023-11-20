@@ -13,6 +13,14 @@ npm start
 
 ## Deploying
 
+First, the commands need to be uploaded to discord
+
+```sh
+npm run deploy-commands
+```
+
+Then the app can be deployed
+
 ```sh
 gcloud app deploy app.prod.yaml
 ```
