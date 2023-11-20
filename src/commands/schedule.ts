@@ -1,3 +1,4 @@
+import { DAYS_OF_THE_WEEK, DayOfTheWeek } from './../constants';
 import { PollResultsFormatter } from './../scheduling/types';
 import { PartyScheduler } from './../scheduling/party-scheduler';
 import {
@@ -23,7 +24,6 @@ import { ScheduleResponse } from '../scheduling/types';
 const log = makeLogger(module);
 
 const TIME_TO_REACT_MINUTES = 60;
-const DAYS_OF_THE_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
 
 export class ScheduleCommand implements Command {
     public readonly data: SlashCommandBuilder;
@@ -159,7 +159,7 @@ export class ScheduleCommand implements Command {
         log.info(`${ctx} collected response from ${collectionResponse.user.id} for message ${messageId}`);
 
         const userScheduleResponse: ScheduleResponse = {
-            days: collectionResponse.values,
+            days: collectionResponse.values as DayOfTheWeek[],
             userId: collectionResponse.user.id,
             responseTime: collectionResponse.createdTimestamp,
         };

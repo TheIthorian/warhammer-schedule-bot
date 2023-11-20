@@ -1,5 +1,7 @@
+import { DayOfTheWeek } from '../constants';
+
 export type ScheduleResponse = {
-    days: string[];
+    days: DayOfTheWeek[];
     userId: string;
     responseTime: number;
 };
