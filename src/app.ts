@@ -2,6 +2,7 @@ import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { config } from './config';
 import { commandInteractionRouter } from './commands';
 import { makeLogger } from './util/logger';
+import { jobScheduler } from './scheduling';
 
 const log = makeLogger(module);
 
@@ -18,4 +19,6 @@ export async function start() {
     });
 
     client.login(config.botToken);
+
+    jobScheduler.setDiscordClient(client); // Give scheduled callbacks access to the discord client
 }
