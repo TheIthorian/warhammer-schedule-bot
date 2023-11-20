@@ -1,7 +1,8 @@
+import { padString } from '../util/string';
 import { DAYS_OF_THE_WEEK, DayOfTheWeek } from '../constants';
 import { PollResultsFormatter, ScheduleResponse } from './types';
 
-const GRAPHIC_WIDTH = 10;
+const GRAPHIC_WIDTH = 20;
 
 const lengthOfLongestDayName = DAYS_OF_THE_WEEK.reduce((prev, curr) => Math.max(prev, curr.length), 0);
 
@@ -12,10 +13,9 @@ export class AsciiPollResultsFormatter implements PollResultsFormatter {
         const maxResponders = results[0].userIds.length;
         const formattedResultsArray = results.map(result => {
             const fractionOfMax = (GRAPHIC_WIDTH * result.userIds.length) / maxResponders;
-            let graphString = `(${result.userIds.length})\t${fixWidth(result.day + ':', lengthOfLongestDayName + 1)}\t`;
-            graphString += '|' + new Array(fractionOfMax).fill('█').join('');
-            graphString += new Array(GRAPHIC_WIDTH - fractionOfMax).fill(' ').join('') + '|';
-            return graphString;
+            const recordString = `(${result.userIds.length})\t${padString(result.day, lengthOfLongestDayName)}\t`;
+            const barString = '|' + padString(padString('', fractionOfMax, '█'), GRAPHIC_WIDTH) + '|';
+            return recordString + barString;
         });
 
         return '```md\n' + formattedResultsArray.join('\n') + '```';
@@ -32,14 +32,6 @@ export class AsciiPollResultsFormatter implements PollResultsFormatter {
 
         return results.sort((a, b) => a.day.localeCompare(b.day)).sort((a, b) => b.userIds.length - a.userIds.length);
     }
-}
-
-function fixWidth(input: string, width: number): string {
-    let result = input;
-    while (result.length < width) {
-        result += ' ';
-    }
-    return result;
 }
 
 export function extractResponses(responses: Map<String, ScheduleResponse>): ScheduleResponse[] {
