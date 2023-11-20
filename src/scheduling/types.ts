@@ -3,3 +3,7 @@ export type ScheduleResponse = {
     userId: string;
     responseTime: number;
 };
+
+export interface PollResultsFormatter {
+    format(responses: Map<String, ScheduleResponse>): string;
+}

@@ -1,3 +1,4 @@
+import { PollResultsFormatter } from './../scheduling/types';
 import { PartyScheduler } from './../scheduling/party-scheduler';
 import {
     ActionRowBuilder,
@@ -27,7 +28,10 @@ const DAYS_OF_THE_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'
 export class ScheduleCommand implements Command {
     public readonly data: SlashCommandBuilder;
 
-    constructor(private readonly partyScheduler: PartyScheduler) {
+    constructor(
+        private readonly partyScheduler: PartyScheduler,
+        private readonly pollResultsFormatter: PollResultsFormatter
+    ) {
         this.data = new SlashCommandBuilder()
             .setName('schedule')
             .setDescription('Asks the group to schedule the next session');
@@ -68,29 +72,23 @@ export class ScheduleCommand implements Command {
 
         buttonCollector.once('collect', async collectionResponse => {
             try {
-                let results: IterableIterator<ScheduleResponse>;
                 const wasCancelled = collectionResponse.customId === 'cancel';
                 if (wasCancelled) {
                     log.info(`${ctx} collected response from ${collectionResponse.user.id} to cancel poll`);
-                    this.partyScheduler.cancelSchedule(guildId);
                     await collectionResponse.reply(`${collectionResponse.user} has cancelled the poll`);
                 } else {
                     log.info(`${ctx} collected response from ${collectionResponse.user.id} to close poll`);
-                    results = this.partyScheduler.closeSchedule(guildId).values();
                     await collectionResponse.reply(`${collectionResponse.user} has closed the poll`);
                 }
 
                 buttonCollector.stop();
-
-                const resultArray = [];
-                for (const r of results) {
-                    resultArray.push(r);
-                }
-
                 handleFinishPoll();
 
+                const results = this.partyScheduler.closeSchedule(guildId);
+                const formattedResults = this.pollResultsFormatter.format(results);
+
                 await interaction.followUp(
-                    `The poll was ${wasCancelled ? 'cancelled' : 'closed'}.\n${JSON.stringify(resultArray)}`
+                    `The poll was ${wasCancelled ? 'cancelled' : 'closed'}.\n${formattedResults}`
                 );
             } catch (err) {
                 log.error(`${ctx} error collecting cancel button response ${err}`);
