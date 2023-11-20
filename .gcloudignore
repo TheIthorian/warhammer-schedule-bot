@@ -20,6 +20,7 @@ node_modules/
 # Build (we can skip the build process if we run with ts-node)
 build
 app.log
+app.prod.yaml
 
 # Project
 assets/
