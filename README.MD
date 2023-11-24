@@ -31,8 +31,8 @@ gcloud app deploy app.prod.yaml
 | ------------ | --------------------------------------------------------------------------------------------- |
 | /ping        | Replies with Pong!                                                                            |
 | /schedule    | Asks everyone which days they are available for the next session                              |
-| /book <date> | Books in a session for the given date. Will send a reminder to everyone closer scheduled date |
-| /roll <dice> | Roll dice                                                                                     |
+| /book :date | Books in a session for the given date. Will send a reminder to everyone closer scheduled date |
+| /roll :dice | Roll dice                                                                                     |
 
 ## Required Permissions
 
