@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model GuildConnection {
+  id      Int    @id @default(autoincrement())
+  guildId String @unique
+
+  connectionUserId String
+  username         String
+  email            String
+
+  polls             Poll[]
+  scheduledMessages ScheduledMessage[]
+
+  @@index([guildId])
+  @@index([connectionUserId])
+}
+
+model Poll {
+  id                Int    @id @default(autoincrement())
+  userId            String
+  guildConnectionId Int
+
+  status String
+
+  PollAnswers     PollAnswer[]
+  GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
+}
+
+model PollAnswer {
+  pollId            Int
+  userId            Int
+  answer            String
+  guildConnectionId Int
+
+  Poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId, answer])
+}
+
+model ScheduledMessage {
+  id                Int      @id @default(autoincrement())
+  guildConnectionId Int
+  messageContent    String
+  scheduledDate     DateTime
+  channelId         String
+  status            String
+
+  GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
+
+  @@index([messageContent, status])
+}

@@ -2,7 +2,7 @@ import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { config } from './config';
 import { commandInteractionRouter } from './commands';
 import { makeLogger } from './util/logger';
-import { jobScheduler } from './scheduling';
+import { ScheduledMessageProcessor } from './scheduling';
 
 const log = makeLogger(module);
 
@@ -14,11 +14,16 @@ export async function start() {
     });
 
     client.on(Events.InteractionCreate, async interaction => {
-        if (interaction.isChatInputCommand()) await commandInteractionRouter.handle(interaction);
-        // else if (interaction.isMessageComponent()) await messageComponentInteractionRouter.handle(interaction);
+        try {
+            if (interaction.isChatInputCommand()) await commandInteractionRouter.handle(interaction);
+            // else if (interaction.isMessageComponent()) await messageComponentInteractionRouter.handle(interaction);
+        } catch (error) {
+            log.error('Error handling interactions', error);
+        }
     });
 
     client.login(config.botToken);
 
-    jobScheduler.setDiscordClient(client); // Give scheduled callbacks access to the discord client
+    const scheduledMessageProcessor = new ScheduledMessageProcessor(client);
+    scheduledMessageProcessor.start();
 }
