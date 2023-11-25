@@ -1,3 +1,1 @@
-import { JobScheduler } from './job-scheduler';
-
-export const jobScheduler = new JobScheduler();
+export * from './scheduled-message-processor';
