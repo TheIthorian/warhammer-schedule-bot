@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RollService formatValues should format values correctly 1`] = `
+"## 1
+## 2
+## 2
+sum: 5; average: 1.7"
+`;
+
+exports[`RollService formatValues should handle single value and omit average in formatting 1`] = `"## 5"`;
