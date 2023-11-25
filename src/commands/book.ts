@@ -28,6 +28,7 @@ export class BookCommand implements Command {
         if (response.isSuccess === false) {
             log.info(`${ctx} error parsing date`);
             await interaction.reply({ content: response.responseContent, ephemeral: true });
+            return;
         }
 
         await interaction.reply({
