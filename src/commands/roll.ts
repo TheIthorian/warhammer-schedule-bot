@@ -2,13 +2,14 @@ import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'dis
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
+import { RollService } from '../services/roll';
 
 const log = makeLogger(module);
 
 export class RollCommand implements Command {
     public readonly data: SlashCommandBuilder;
 
-    constructor() {
+    constructor(private readonly rollService: RollService) {
         this.data = new SlashCommandBuilder()
             .setName('roll')
             .setDescription('Roll a dice')
@@ -19,32 +20,19 @@ export class RollCommand implements Command {
     async execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
         const ctx = logContext(`${RollCommand.name}.${this.execute.name}`, getInteractionLogDetails(interaction), log);
 
-        const stringInput = interaction.options.getString('dice')?.toLocaleLowerCase().trim() ?? '1d20';
-        const [numberOfRolls, sides] = stringInput.split('d');
+        const stringInput = interaction.options.getString('dice');
+        const parsedInputResult = this.rollService.parseRollInput(stringInput);
 
-        if (!numberOfRolls || !sides || isNaN(Number(numberOfRolls)) || isNaN(Number(sides))) {
+        if (parsedInputResult.isSuccess === false) {
             log.debug(`${ctx} invalid dice input`);
-            await interaction.reply({
-                content: `Invalid dice roll. Please input dice with the format like 1d10`,
-                ephemeral: true,
-            });
+            await interaction.reply({ content: parsedInputResult.message, ephemeral: true });
             return;
         }
 
-        const numbers = new Array<number>(Math.min(Number(numberOfRolls), 10))
-            .fill(0)
-            .map(() => Math.floor(Math.random() * Number(sides)));
+        const rolls = this.rollService.generateValues(parsedInputResult.options);
+        const resultingInputString = `${parsedInputResult.options.rolls}d${parsedInputResult.options.sides}`;
+        const content = `${interaction.user} rolled ${resultingInputString}\n${this.rollService.formatValues(rolls)}`;
 
-        const sum = numbers.reduce<number>((total, curr) => total + curr, 0);
-        const average = (sum / numbers.length).toFixed(1);
-        const resultList = numbers.map(n => '## ' + n);
-
-        const subtext = numbers.length > 1 ? `\nsum: ${sum}; average: ${average}` : '';
-
-        await interaction.reply({
-            content: `${interaction.user} rolled ${stringInput}
-${resultList.join('\n')}${subtext}`,
-            ephemeral: false,
-        });
+        await interaction.reply({ content, ephemeral: false });
     }
 }
