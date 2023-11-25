@@ -3,3 +3,4 @@ build
 .env
 app.log
 app.prod.yaml
+project/
