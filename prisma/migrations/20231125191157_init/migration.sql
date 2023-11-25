@@ -13,7 +13,7 @@ CREATE TABLE "Poll" (
     "userId" TEXT NOT NULL,
     "guildConnectionId" INTEGER NOT NULL,
     "status" TEXT NOT NULL,
-    CONSTRAINT "Poll_guildConnectionId_fkey" FOREIGN KEY ("guildConnectionId") REFERENCES "GuildConnection" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Poll_guildConnectionId_fkey" FOREIGN KEY ("guildConnectionId") REFERENCES "GuildConnection" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -22,7 +22,7 @@ CREATE TABLE "PollAnswer" (
     "userId" INTEGER NOT NULL,
     "answer" TEXT NOT NULL,
     "guildConnectionId" INTEGER NOT NULL,
-    CONSTRAINT "PollAnswer_pollId_fkey" FOREIGN KEY ("pollId") REFERENCES "Poll" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "PollAnswer_pollId_fkey" FOREIGN KEY ("pollId") REFERENCES "Poll" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -32,7 +32,8 @@ CREATE TABLE "ScheduledMessage" (
     "messageContent" TEXT NOT NULL,
     "scheduledDate" DATETIME NOT NULL,
     "channelId" TEXT NOT NULL,
-    CONSTRAINT "ScheduledMessage_guildConnectionId_fkey" FOREIGN KEY ("guildConnectionId") REFERENCES "GuildConnection" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "status" TEXT NOT NULL,
+    CONSTRAINT "ScheduledMessage_guildConnectionId_fkey" FOREIGN KEY ("guildConnectionId") REFERENCES "GuildConnection" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -46,3 +47,6 @@ CREATE INDEX "GuildConnection_connectionUserId_idx" ON "GuildConnection"("connec
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PollAnswer_pollId_userId_answer_key" ON "PollAnswer"("pollId", "userId", "answer");
+
+-- CreateIndex
+CREATE INDEX "ScheduledMessage_messageContent_status_idx" ON "ScheduledMessage"("messageContent", "status");

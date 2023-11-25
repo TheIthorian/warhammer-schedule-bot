@@ -33,7 +33,7 @@ model Poll {
   status String
 
   PollAnswers     PollAnswer[]
-  GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id])
+  GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
 }
 
 model PollAnswer {
@@ -42,7 +42,7 @@ model PollAnswer {
   answer            String
   guildConnectionId Int
 
-  Poll Poll @relation(fields: [pollId], references: [id])
+  Poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
 
   @@unique([pollId, userId, answer])
 }
@@ -53,6 +53,9 @@ model ScheduledMessage {
   messageContent    String
   scheduledDate     DateTime
   channelId         String
+  status            String
 
-  GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id])
+  GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
+
+  @@index([messageContent, status])
 }
