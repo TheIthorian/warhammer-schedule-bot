@@ -30,7 +30,8 @@ export class RollCommand implements Command {
         }
 
         const rolls = this.rollService.generateValues(parsedInputResult.options);
-        const content = `${interaction.user} rolled ${stringInput}\n${this.rollService.formatValues(rolls)}`;
+        const resultingInputString = `${parsedInputResult.options.rolls}d${parsedInputResult.options.sides}`;
+        const content = `${interaction.user} rolled ${resultingInputString}\n${this.rollService.formatValues(rolls)}`;
 
         await interaction.reply({ content, ephemeral: false });
     }
