@@ -10,9 +10,7 @@ describe('ScheduledMessageProcessor', () => {
     const future = new Date(2099, 0, 1);
 
     const mockChannel = { isTextBased: jest.fn(), send: jest.fn() };
-    const discordClientMock = {
-        channels: { fetch: jest.fn().mockResolvedValue(mockChannel) },
-    };
+    const discordClientMock = { channels: { fetch: jest.fn() } };
 
     const scheduledMessageProcessor = new ScheduledMessageProcessor(discordClientMock);
 
@@ -25,6 +23,8 @@ describe('ScheduledMessageProcessor', () => {
     beforeEach(async () => {
         await prisma.scheduledMessage.deleteMany();
         newMessageDetails = { guildConnectionId: guildConnection.id, scheduledDate: earlier, channelId };
+
+        discordClientMock.channels.fetch.mockResolvedValue(mockChannel);
     });
 
     afterEach(() => {
