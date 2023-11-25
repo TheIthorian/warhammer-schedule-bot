@@ -69,6 +69,7 @@ export class ReminderService {
                     messageContent: `Hey @everyone 👋 don't forget we have our session today at ${time(date, 't')}`,
                     scheduledDate: dayReminder,
                     channelId,
+                    status: 'pending',
                 },
             }),
             prisma.scheduledMessage.create({
@@ -77,6 +78,7 @@ export class ReminderService {
                     messageContent: `Hey @everyone 👋 Today's session will be starting in ${time(date, 'R')}`,
                     scheduledDate: hourReminder,
                     channelId,
+                    status: 'pending',
                 },
             }),
         ]);
