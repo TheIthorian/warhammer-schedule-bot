@@ -4,3 +4,4 @@ build
 app.log
 app.prod.yaml
 project/
+*.db
