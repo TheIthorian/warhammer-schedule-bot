@@ -3,6 +3,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const nodeEnv = process.env.NODE_ENV;
+
+if (nodeEnv === 'test') {
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
+}
+
 export const config = {
     applicationId: assertResource(process.env.APPLICATION_ID),
     publicKey: assertResource(process.env.PUBLIC_KEY),
@@ -14,5 +20,11 @@ export const config = {
 
     permissionsInt: 377957255232,
 
-    isLocal: process.env.NODE_ENV === 'local',
+    isLocal: nodeEnv === 'local',
+
+    discord: {
+        baseAuthUrl: 'https://discord.com/oauth2/authorize',
+        tokenUrl: 'https://discord.com/api/oauth2/token',
+        tokenRevokationUrl: 'https://discord.com/api/oauth2/token/revoke',
+    },
 };

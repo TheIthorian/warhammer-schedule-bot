@@ -6,9 +6,10 @@
     "scripts": {
         "build_": "tsc --outDir './build'",
         "start": "ts-node index.js | pino-pretty",
-        "test": "DATABASE_URL='file:./dev.test.db' npm run test:dropdb && npm run database:init && jest --forceExit",
+        "test": "npm run test:dropdb && npm run database:init:test && jest --forceExit",
         "test:dropdb": "rm prisma/dev.test.db || echo 'no database to drop'",
         "database:init": "prisma migrate dev --name init && prisma generate",
+        "database:init:test": "DATABASE_URL='file:./dev.test.db' npm run database:init",
         "deploy-commands": "ts-node src/scripts/register-commands.ts",
         "invite-link": "ts-node src/scripts/invite.ts",
         "prettier": "npx prettier -w ."
