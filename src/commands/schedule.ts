@@ -61,7 +61,7 @@ export class ScheduleCommand implements Command {
         );
         const { id: messageId, url: messageUrl } = await response.fetch();
 
-        this.partyScheduler.createPoll({ messageId, channelId, userId: user.id, guildConnectionId, messageUrl });
+        await this.partyScheduler.createPoll({ messageId, channelId, userId: user.id, guildConnectionId, messageUrl });
 
         // Collect responses
         daySelectCollector.on('collect', async collectionResponse => {
@@ -175,9 +175,9 @@ export class ScheduleCommand implements Command {
             ephemeral: true,
         });
 
-        this.partyScheduler.addPollAnswer(guildConnectionId, userScheduleResponse);
+        await this.partyScheduler.addPollAnswer(guildConnectionId, userScheduleResponse);
 
-        if (this.partyScheduler.hasEveryoneResponded(guildConnectionId, interaction.guild.memberCount)) {
+        if (await this.partyScheduler.hasEveryoneResponded(guildConnectionId, interaction.guild.memberCount)) {
             log.info(`${ctx} scheduling is finished`);
             await interaction.followUp({
                 content: 'Everyone has replied! You may close the poll',
