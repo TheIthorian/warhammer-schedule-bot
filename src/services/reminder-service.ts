@@ -1,7 +1,7 @@
 import { time } from 'discord.js';
-import prisma from '../../primsaClient';
-import { DateParser } from '../../util/date-parser';
-import { logContext, makeLogger } from '../../util/logger';
+import prisma from '../primsaClient';
+import { DateParser } from '../util/date-parser';
+import { logContext, makeLogger } from '../util/logger';
 
 type AddReminderInput = {
     date: Date;
@@ -84,3 +84,5 @@ export class ReminderService {
         ]);
     }
 }
+
+export const reminderService = new ReminderService(new DateParser());

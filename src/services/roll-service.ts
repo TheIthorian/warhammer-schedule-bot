@@ -1,4 +1,4 @@
-import { logContext, makeLogger } from '../../util/logger';
+import { logContext, makeLogger } from '../util/logger';
 
 const log = makeLogger(module);
 
@@ -44,3 +44,5 @@ export class RollService {
         return `${resultList.join('\n')}${subtext}`;
     }
 }
+
+export const rollService = new RollService();
