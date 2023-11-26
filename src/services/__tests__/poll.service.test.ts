@@ -1,4 +1,4 @@
-import { PollService } from '../poll-service';
+import { PollService } from '../poll.service';
 import prisma from '../../primsaClient';
 import { makeGuild } from '../../util/test-utils/record-generator';
 import { GuildConnection } from '@prisma/client';

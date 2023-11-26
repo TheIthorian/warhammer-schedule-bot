@@ -1,4 +1,4 @@
-import { ReminderService } from '../reminder-service';
+import { ReminderService } from '../reminder.service';
 import { DateParser } from '../../util/date-parser';
 import prisma from '../../primsaClient';
 import { randomUUID } from 'crypto';
