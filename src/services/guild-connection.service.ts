@@ -15,7 +15,7 @@ export class GuildConnectionService {
     }
 
     public async getByGuildId(guildId: string) {
-        return await prisma.guildConnection.findFirstOrThrow({
+        return await prisma.guildConnection.findFirst({
             select: { id: true, connectionUserId: true },
             where: { guildId },
         });
