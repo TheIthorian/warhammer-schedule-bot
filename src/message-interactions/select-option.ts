@@ -11,7 +11,6 @@ const log = makeLogger(module);
 
 export class SelectOptionInteraction implements MessageComponentInteractionHandler {
     constructor(
-        private readonly scheduleService: ScheduleService,
         private readonly pollService: PollService,
         private readonly guildConnectionService: GuildConnectionService
     ) {}
