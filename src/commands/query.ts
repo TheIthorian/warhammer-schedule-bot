@@ -13,9 +13,10 @@ export class QueryCommand implements Command {
 
     constructor() {
         this.data = new SlashCommandBuilder()
+            .setName('query')
             .setDescription('Answers your questions!')
             .addStringOption(option =>
-                option.setName('queryInput').setDescription('Your question to the AI').setRequired(true)
+                option.setName('input').setDescription('Your question to the AI').setRequired(true)
             )
             .setName('query');
     }
@@ -29,10 +30,18 @@ export class QueryCommand implements Command {
             return;
         }
 
-        const response = await fetch(`${config.aiService.url}/query/${interaction.options.get('queryInput')}`, {
+        const url = `${config.aiService.url}/query/${interaction.options.get('input').value}`;
+        const response = await fetch(url, {
             headers: { api: config.aiService.apiKey! },
         });
 
-        await interaction.reply(await response.text());
+        const queryResponse = await response.text();
+
+        log.info(`${ctx} - query to: ${url}`);
+
+        await interaction.reply({
+            content: queryResponse.substring(0, 1900) + (queryResponse.length > 1900 ? '...' : ''),
+            ephemeral: true,
+        });
     }
 }
