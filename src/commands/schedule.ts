@@ -65,7 +65,13 @@ export class ScheduleCommand implements Command {
         );
         const { id: messageId, url: messageUrl } = await response.fetch();
 
-        await this.partyScheduler.createPoll({ messageId, channelId, userId: user.id, guildConnectionId, messageUrl });
+        const newPoll = await this.partyScheduler.createPoll({
+            messageId,
+            channelId,
+            userId: user.id,
+            guildConnectionId,
+            messageUrl,
+        });
 
         // Collect responses
         daySelectCollector.on('collect', async collectionResponse => {
@@ -80,7 +86,7 @@ export class ScheduleCommand implements Command {
         buttonCollector.once('collect', async collectionResponse => {
             try {
                 buttonCollector.stop();
-                handleFinishPoll();
+                handleFinishPoll(channelId, newPoll.messageId);
 
                 const results = await this.partyScheduler.closePoll(guildConnectionId);
                 const formattedResults = this.pollResultsFormatter.format(results);
@@ -109,28 +115,10 @@ export class ScheduleCommand implements Command {
         daySelectCollector: InteractionCollector<StringSelectMenuInteraction<CacheType>>;
         buttonCollector: InteractionCollector<ButtonInteraction<CacheType>>;
         response: InteractionResponse<boolean>;
-        handleFinishPoll: () => void;
+        handleFinishPoll: (channelId: string, messageId: string) => void;
     }> {
-        const select = new StringSelectMenuBuilder()
-            .setCustomId('scheduler')
-            .setPlaceholder('Make a selection!')
-            .setMinValues(0)
-            .setMaxValues(7)
-            .addOptions(DAYS_OF_THE_WEEK.map(day => new StringSelectMenuOptionBuilder().setLabel(day).setValue(day)));
-        const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
-
-        const cancelButton = new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger);
-        const closePollButton = new ButtonBuilder()
-            .setCustomId('close')
-            .setLabel('Close Poll')
-            .setStyle(ButtonStyle.Secondary);
-        const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents([closePollButton, cancelButton]);
-
-        const pollCreationText = 'Hey @everyone 👋 Please select the days that you are available next week';
-        const response = await interaction.reply({
-            content: pollCreationText,
-            components: [row, row2],
-        });
+        const schedulingMessageComponents = this.scheduleService.getSchedulingMessageComponents();
+        const response = await interaction.reply(schedulingMessageComponents);
 
         const daySelectCollector = response.createMessageComponentCollector({
             componentType: ComponentType.StringSelect,
@@ -142,9 +130,8 @@ export class ScheduleCommand implements Command {
             time: TIME_TO_REACT_MINUTES * 60 * 1_000,
         });
 
-        const handleFinishPoll = () => {
-            row.components.forEach(c => c.setDisabled(true));
-            interaction.editReply({ components: [row], content: `${pollCreationText}\n(this poll has ended)` });
+        const handleFinishPoll = async (channelId: string, messageId: string) => {
+            await this.scheduleService.disablePoll(channelId, messageId);
         };
 
         return { daySelectCollector, buttonCollector, response, handleFinishPoll };

@@ -79,13 +79,7 @@ export class PollService {
         return responsesByUser;
     }
 
-    public async createPoll({
-        messageId,
-        messageUrl,
-        channelId,
-        userId,
-        guildConnectionId,
-    }: CreatePollInput): Promise<void> {
+    public async createPoll({ messageId, messageUrl, channelId, userId, guildConnectionId }: CreatePollInput) {
         const ctx = logContext(
             `${PollService.name}.${this.createPoll.name}`,
             { guildConnectionId, messageId, userId, channelId },
@@ -97,7 +91,7 @@ export class PollService {
             throw new Error('A poll is already in progress');
         }
 
-        await prisma.poll.create({
+        return await prisma.poll.create({
             data: {
                 userId,
                 guildConnectionId,
