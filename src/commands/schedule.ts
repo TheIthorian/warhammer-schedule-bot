@@ -1,25 +1,18 @@
-import { DAYS_OF_THE_WEEK, DayOfTheWeek } from './../constants';
+import { DayOfTheWeek } from './../constants';
 import { PollResultsFormatter } from './../scheduling/types';
 import { PollService } from '../services/poll-service';
 import {
-    ActionRowBuilder,
-    ButtonBuilder,
     ButtonInteraction,
-    ButtonStyle,
     CacheType,
     ChatInputCommandInteraction,
     ComponentType,
     InteractionCollector,
     InteractionResponse,
     SlashCommandBuilder,
-    StringSelectMenuBuilder,
-    StringSelectMenuInteraction,
-    StringSelectMenuOptionBuilder,
 } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
-import { ScheduleResponse } from '../scheduling/types';
 import { GuildConnectionService } from '../services/guild-connection';
 import { ScheduleService } from '../scheduling/schedule-service';
 
@@ -60,9 +53,7 @@ export class ScheduleCommand implements Command {
         }
 
         // Start scheduling
-        const { daySelectCollector, buttonCollector, response, handleFinishPoll } = await this.sendSchedulingMessage(
-            interaction
-        );
+        const { buttonCollector, response, handleFinishPoll } = await this.sendSchedulingMessage(interaction);
         const { id: messageId, url: messageUrl } = await response.fetch();
 
         const newPoll = await this.partyScheduler.createPoll({
@@ -71,16 +62,6 @@ export class ScheduleCommand implements Command {
             userId: user.id,
             guildConnectionId,
             messageUrl,
-        });
-
-        // Collect responses
-        daySelectCollector.on('collect', async collectionResponse => {
-            try {
-                await this.handleCollectDay(collectionResponse, interaction, { messageId, guildConnectionId });
-            } catch (err) {
-                log.error(`${ctx} error collecting day select response ${err}`);
-                console.error(err);
-            }
         });
 
         buttonCollector.once('collect', async collectionResponse => {
@@ -112,7 +93,6 @@ export class ScheduleCommand implements Command {
     }
 
     private async sendSchedulingMessage(interaction: ChatInputCommandInteraction<CacheType>): Promise<{
-        daySelectCollector: InteractionCollector<StringSelectMenuInteraction<CacheType>>;
         buttonCollector: InteractionCollector<ButtonInteraction<CacheType>>;
         response: InteractionResponse<boolean>;
         handleFinishPoll: (channelId: string, messageId: string) => void;
@@ -134,34 +114,6 @@ export class ScheduleCommand implements Command {
             await this.scheduleService.disablePoll(channelId, messageId);
         };
 
-        return { daySelectCollector, buttonCollector, response, handleFinishPoll };
-    }
-
-    private async handleCollectDay(
-        collectionResponse: StringSelectMenuInteraction<CacheType>,
-        interaction: ChatInputCommandInteraction<CacheType>,
-        { messageId, guildConnectionId }: { messageId: string; guildConnectionId: number }
-    ) {
-        const ctx = logContext(`${ScheduleCommand.name}.${this.handleCollectDay.name}`);
-        log.info(`${ctx} collected response from ${collectionResponse.user.id} for message ${messageId}`);
-
-        const userScheduleResponse: ScheduleResponse = {
-            days: collectionResponse.values as DayOfTheWeek[],
-            userId: collectionResponse.user.id,
-        };
-
-        await collectionResponse.reply({
-            content: `You have selected ${userScheduleResponse.days.join(', ')}!`,
-            ephemeral: true,
-        });
-
-        await this.partyScheduler.addPollAnswer(guildConnectionId, userScheduleResponse);
-
-        if (await this.partyScheduler.hasEveryoneResponded(guildConnectionId, interaction.guild.memberCount)) {
-            log.info(`${ctx} scheduling is finished`);
-            await interaction.followUp({
-                content: 'Everyone has replied! You may close the poll',
-            });
-        }
+        return { buttonCollector, response, handleFinishPoll };
     }
 }

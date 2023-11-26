@@ -1,6 +1,7 @@
 import { Events } from 'discord.js';
 import { config } from './config';
 import { commandInteractionRouter } from './commands';
+import { messageComponentInteractionRouter } from './message-interactions';
 import { makeLogger } from './util/logger';
 import { ScheduledMessageProcessor } from './scheduling';
 import { client } from './discord-client';
@@ -15,7 +16,7 @@ export async function start() {
     client.on(Events.InteractionCreate, async interaction => {
         try {
             if (interaction.isChatInputCommand()) await commandInteractionRouter.handle(interaction);
-            // else if (interaction.isMessageComponent()) await messageComponentInteractionRouter.handle(interaction);
+            else if (interaction.isMessageComponent()) await messageComponentInteractionRouter.handle(interaction);
         } catch (error) {
             log.error('Error handling interactions', error);
         }
