@@ -1,4 +1,4 @@
-import { FailedRollParseResult, RollService, SuccessfulRollParseResult } from '../roll-service';
+import { FailedRollParseResult, RollService, SuccessfulRollParseResult } from '../roll.service';
 
 describe('RollService', () => {
     let rollService: RollService;

@@ -2,7 +2,7 @@ import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'dis
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
-import { RollService } from '../services/roll-service';
+import { RollService } from '../services/roll.service';
 
 const log = makeLogger(module);
 

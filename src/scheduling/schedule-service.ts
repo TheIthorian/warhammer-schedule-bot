@@ -7,7 +7,7 @@ import {
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder,
 } from 'discord.js';
-import { PollService, pollService } from '../services/poll-service';
+import { PollService, pollService } from '../services/poll.service';
 import { DAYS_OF_THE_WEEK } from '../constants';
 import { client } from '../discord-client';
 

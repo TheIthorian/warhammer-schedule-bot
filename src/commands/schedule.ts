@@ -1,10 +1,10 @@
 import { PollResultsFormatter } from './../scheduling/types';
-import { PollService } from '../services/poll-service';
+import { PollService } from '../services/poll.service';
 import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
-import { GuildConnectionService } from '../services/guild-connection';
+import { GuildConnectionService } from '../services/guild-connection.service';
 import { ScheduleService } from '../scheduling/schedule-service';
 
 const log = makeLogger(module);

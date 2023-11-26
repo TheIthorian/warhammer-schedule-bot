@@ -2,8 +2,8 @@ import { AnySelectMenuInteraction, CacheType, ButtonInteraction } from 'discord.
 import { MessageComponentInteractionHandler } from './types';
 import { logContext, makeLogger } from '../util/logger';
 import { getInteractionLogDetails } from '../util/interaction-info';
-import { PollService } from '../services/poll-service';
-import { GuildConnectionService } from '../services/guild-connection';
+import { PollService } from '../services/poll.service';
+import { GuildConnectionService } from '../services/guild-connection.service';
 import { DayOfTheWeek } from '../constants';
 import { ScheduleService } from '../scheduling/schedule-service';
 import { PollResultsFormatter } from '../scheduling/types';

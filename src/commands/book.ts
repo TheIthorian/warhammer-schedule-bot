@@ -1,4 +1,4 @@
-import { ReminderService } from '../services/reminder-service';
+import { ReminderService } from '../services/reminder.service';
 import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder, time } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
