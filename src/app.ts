@@ -5,7 +5,7 @@ import { messageComponentInteractionRouter } from './message-interactions';
 import { makeLogger } from './util/logger';
 import { ScheduledMessageProcessor } from './scheduling';
 import { client } from './discord-client';
-import { guildConnectionService } from 'services/guild-connection.service';
+import { guildConnectionService } from './services/guild-connection.service';
 
 const log = makeLogger(module);
 
