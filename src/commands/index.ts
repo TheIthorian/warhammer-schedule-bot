@@ -10,13 +10,17 @@ import { Command } from './types';
 import { reminderService } from '../services/reminder';
 import { RollService } from '../services/roll';
 import { guildConnectionService } from '../services/guild-connection';
+import { ScheduleService } from '../scheduling/schedule-service';
+import { client } from '../discord-client';
 
-const partyScheduler = new PollService();
+const pollService = new PollService();
 const pollResultsFormatter = new AsciiPollResultsFormatter();
+
+const scheduleService = new ScheduleService(pollService, client);
 
 export const commands: Array<Command> = [
     new PingCommand(),
-    new ScheduleCommand(partyScheduler, pollResultsFormatter, guildConnectionService),
+    new ScheduleCommand(pollService, pollResultsFormatter, guildConnectionService, scheduleService),
     new BookCommand(reminderService),
     new RollCommand(new RollService()),
 ];

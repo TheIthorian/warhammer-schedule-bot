@@ -21,6 +21,7 @@ import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
 import { ScheduleResponse } from '../scheduling/types';
 import { GuildConnectionService } from '../services/guild-connection';
+import { ScheduleService } from '../scheduling/schedule-service';
 
 const log = makeLogger(module);
 
@@ -32,7 +33,8 @@ export class ScheduleCommand implements Command {
     constructor(
         private readonly partyScheduler: PollService,
         private readonly pollResultsFormatter: PollResultsFormatter,
-        private readonly guildConnectionService: GuildConnectionService
+        private readonly guildConnectionService: GuildConnectionService,
+        private readonly scheduleService: ScheduleService
     ) {
         this.data = new SlashCommandBuilder()
             .setName('schedule')
@@ -50,9 +52,11 @@ export class ScheduleCommand implements Command {
         const { id: guildConnectionId } = await this.guildConnectionService.getByGuildId(guildId);
 
         // Already in progress
-        if (await this.partyScheduler.isExistPollInProgress(guildConnectionId)) {
+        const validatePollInProgressResult = await this.scheduleService.validatePollInProgress(guildConnectionId);
+        if (validatePollInProgressResult.inProgress === true) {
             log.info(`${ctx} scheduling is already in progress`);
-            return await this.sendScheduleInProgressMessage(interaction, guildConnectionId);
+            await interaction.reply(validatePollInProgressResult.reply);
+            return;
         }
 
         // Start scheduling
@@ -98,17 +102,6 @@ export class ScheduleCommand implements Command {
                 log.error(`${ctx} error collecting cancel button response ${err}`);
                 console.error(err);
             }
-        });
-    }
-
-    private async sendScheduleInProgressMessage(
-        interaction: ChatInputCommandInteraction<CacheType>,
-        guildConnectionId: number
-    ): Promise<void> {
-        const [{ messageUrl }] = await this.partyScheduler.getInProgressPoll(guildConnectionId);
-        await interaction.reply({
-            content: `Scheduling is already in progress here: ${messageUrl}. Cancel it if you want to create a new one`,
-            ephemeral: true,
         });
     }
 
