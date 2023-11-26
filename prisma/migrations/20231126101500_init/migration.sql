@@ -25,6 +25,7 @@ CREATE TABLE "PollAnswer" (
     "guildConnectionId" INTEGER NOT NULL,
     "userId" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
+    "answeredDate" DATETIME NOT NULL,
     CONSTRAINT "PollAnswer_pollId_fkey" FOREIGN KEY ("pollId") REFERENCES "Poll" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
