@@ -4,6 +4,7 @@ import { makeGuild } from '../../util/test-utils/record-generator';
 import { GuildConnection } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { faker } from '@faker-js/faker';
+import { setTimeout } from 'timers/promises';
 
 describe('PartyScheduler', () => {
     let channelId: string, guildConnection: GuildConnection;
@@ -92,6 +93,7 @@ describe('PartyScheduler', () => {
         test('should return in-progress poll details', async () => {
             const poll1 = await createPoll(userId1);
             await createPollAnswer(poll1.id, userId1, ['Monday', 'Tuesday']);
+            await setTimeout(100); // Make ordering predictable
             await createPollAnswer(poll1.id, userId2, ['Tuesday']);
 
             expect(await partyScheduler.getInProgressPoll(guildConnection.id)).toStrictEqual([
