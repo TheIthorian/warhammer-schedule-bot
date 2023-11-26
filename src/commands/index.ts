@@ -1,6 +1,5 @@
 import { RollCommand } from './roll';
 import { BookCommand } from './book';
-import { AsciiPollResultsFormatter } from './../scheduling/ascii-poll-results-formatter';
 import { pollService } from '../services/poll-service';
 import { ScheduleCommand } from './schedule';
 import { linearSpamProtection } from './../spam';
@@ -10,14 +9,11 @@ import { Command } from './types';
 import { reminderService } from '../services/reminder';
 import { RollService } from '../services/roll';
 import { guildConnectionService } from '../services/guild-connection';
-import { ScheduleService, scheduleService } from '../scheduling/schedule-service';
-import { client } from '../discord-client';
-
-const pollResultsFormatter = new AsciiPollResultsFormatter();
+import { scheduleService } from '../scheduling/schedule-service';
 
 export const commands: Array<Command> = [
     new PingCommand(),
-    new ScheduleCommand(pollService, pollResultsFormatter, guildConnectionService, scheduleService),
+    new ScheduleCommand(pollService, guildConnectionService, scheduleService),
     new BookCommand(reminderService),
     new RollCommand(new RollService()),
 ];
