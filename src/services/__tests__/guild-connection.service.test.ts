@@ -5,7 +5,7 @@ describe('GuildConnectionService', () => {
     const guildConnectionService = new GuildConnectionService();
 
     beforeEach(async () => {
-        await prisma.poll.deleteMany();
+        await prisma.guildConnection.deleteMany();
     });
 
     describe('createGuildConnection', () => {
@@ -40,14 +40,11 @@ describe('GuildConnectionService', () => {
                 username: 'testUser',
             });
 
-            await guildConnectionService.getByGuildId('guild:1');
+            const guildConnection = await guildConnectionService.getByGuildId('guild:1');
 
-            expect(await prisma.guildConnection.findFirstOrThrow()).toStrictEqual({
+            expect(guildConnection).toStrictEqual({
                 id: expect.any(Number),
-                guildId: 'guild:1',
                 connectionUserId: 'user:1',
-                username: 'testUser',
-                email: '',
             });
         });
     });
