@@ -1,6 +1,6 @@
 import { ReminderService } from '../reminder.service';
-import { DateParser } from '../../../util/date-parser';
-import prisma from '../../../primsaClient';
+import { DateParser } from '../../util/date-parser';
+import prisma from '../../primsaClient';
 import { randomUUID } from 'crypto';
 import { time } from 'discord.js';
 

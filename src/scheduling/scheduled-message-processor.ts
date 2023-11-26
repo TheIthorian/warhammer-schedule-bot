@@ -11,9 +11,16 @@ type ScheduledMessageDetails = {
     channelId: string;
 };
 
+/**
+ * Asynchronous processing of scheduled messages.
+ * Check every 5 minutes for any scheduled messages. Sends messages when scheduled time has elapsed.
+ */
 export class ScheduledMessageProcessor {
     constructor(private readonly discordClient: Client) {}
 
+    /**
+     * Activates the message processing
+     */
     public start() {
         schedule.scheduleJob('*/5 * * * *', async () => {
             log.info('processing scheduled message');

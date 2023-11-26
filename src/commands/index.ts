@@ -1,22 +1,20 @@
 import { RollCommand } from './roll';
 import { BookCommand } from './book';
-import { AsciiPollResultsFormatter } from './../scheduling/ascii-poll-results-formatter';
-import { PartyScheduler } from './../scheduling/party-scheduler';
+import { pollService } from '../services/poll.service';
 import { ScheduleCommand } from './schedule';
 import { linearSpamProtection } from './../spam';
 import { CommandInteractionRouter } from './router';
 import { PingCommand } from './ping';
 import { Command } from './types';
-import { reminderService } from '../services/reminder';
-import { RollService } from '../services/roll';
-
-const partyScheduler = new PartyScheduler();
-const pollResultsFormatter = new AsciiPollResultsFormatter();
+import { reminderService } from '../services/reminder.service';
+import { rollService } from '../services/roll.service';
+import { guildConnectionService } from '../services/guild-connection.service';
+import { scheduleService } from '../scheduling/schedule-service';
 
 export const commands: Array<Command> = [
     new PingCommand(),
-    new ScheduleCommand(partyScheduler, pollResultsFormatter),
+    new ScheduleCommand(pollService, guildConnectionService, scheduleService),
     new BookCommand(reminderService),
-    new RollCommand(new RollService()),
+    new RollCommand(rollService),
 ];
 export const commandInteractionRouter = new CommandInteractionRouter(commands, linearSpamProtection);

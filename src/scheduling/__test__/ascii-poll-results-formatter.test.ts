@@ -3,20 +3,16 @@ import { AsciiPollResultsFormatter, extractResponses, transposeResponses } from 
 import { ScheduleResponse } from '../types';
 
 describe('AsciiPollResultsFormatter', () => {
-    const responseTime = new Date().getTime();
-
     const formatter = new AsciiPollResultsFormatter();
     const responses = new Map<string, ScheduleResponse>();
     responses.set('user:1', {
         days: ['Monday', 'Tuesday'],
         userId: 'user:1',
-        responseTime,
     });
 
     responses.set('user:2', {
         days: ['Tuesday', 'Wednesday'],
         userId: 'user:2',
-        responseTime,
     });
 
     test('getResults method returns the sorted results', () => {
@@ -50,22 +46,19 @@ describe('extractResponses', () => {
         responses.set('user:1', {
             days: ['Monday', 'Tuesday'],
             userId: 'user:1',
-            responseTime,
         });
 
         const resultArray = extractResponses(responses);
 
-        expect(resultArray).toStrictEqual([{ days: ['Monday', 'Tuesday'], userId: 'user:1', responseTime }]);
+        expect(resultArray).toStrictEqual([{ days: ['Monday', 'Tuesday'], userId: 'user:1' }]);
     });
 });
 
 describe('transposeResponses', () => {
-    const responseTime = new Date().getTime();
-
     test('transposeResponses returns an object with days as keys', () => {
         const responses: ScheduleResponse[] = [
-            { days: ['Monday', 'Tuesday'], userId: 'user:1', responseTime },
-            { days: ['Tuesday', 'Wednesday'], userId: 'user:2', responseTime },
+            { days: ['Monday', 'Tuesday'], userId: 'user:1' },
+            { days: ['Tuesday', 'Wednesday'], userId: 'user:2' },
         ];
 
         const transposedResults = transposeResponses(responses);
