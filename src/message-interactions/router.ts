@@ -8,7 +8,7 @@ const log = makeLogger(module);
 
 export class MessageComponentInteractionRouter implements InteractionRouter {
     constructor(
-        private readonly interactionHandlers: Array<MessageComponentInteractionHandler>,
+        private readonly interactionHandlers: Record<number, MessageComponentInteractionHandler>,
         private readonly spamProtection: SpamProtection
     ) {}
 
@@ -18,12 +18,17 @@ export class MessageComponentInteractionRouter implements InteractionRouter {
         });
 
         const messageId = interaction.message.id;
-        const interactionHandler = this.interactionHandlers[0];
+        const interactionHandler = this.interactionHandlers[interaction.type];
 
         const spamValidationResult = this.spamProtection.getSpamValidation(messageId, interaction.user.id);
         if (spamValidationResult.ok === false) {
             log.info(`${ctx} user hit spam limit for ${messageId}`);
             await this.handleSpamError(interaction, spamValidationResult.message);
+            return;
+        }
+
+        if (!interactionHandler) {
+            log.info(`${ctx} no handler for interaction type: ${interaction.type}`);
             return;
         }
 
