@@ -5,7 +5,7 @@ import { logContext, makeLogger } from '../util/logger';
 
 type AddReminderInput = {
     date: Date;
-    guildId: string;
+    guildConnectionId: number;
     channelId: string;
 };
 
@@ -49,12 +49,7 @@ export class ReminderService {
     }
 
     public async addReminder(input: AddReminderInput): Promise<void> {
-        const { guildId, channelId, date } = input;
-
-        const guildConnection = await prisma.guildConnection.findFirstOrThrow({
-            select: { id: true },
-            where: { guildId },
-        });
+        const { guildConnectionId, channelId, date } = input;
 
         const dayReminder = new Date(date);
         dayReminder.setHours(10, 0, 0, 0);
@@ -65,7 +60,7 @@ export class ReminderService {
         await prisma.$transaction([
             prisma.scheduledMessage.create({
                 data: {
-                    guildConnectionId: guildConnection.id,
+                    guildConnectionId,
                     messageContent: `Hey @everyone 👋 don't forget we have our session today at ${time(date, 't')}`,
                     scheduledDate: dayReminder,
                     channelId,
@@ -74,7 +69,7 @@ export class ReminderService {
             }),
             prisma.scheduledMessage.create({
                 data: {
-                    guildConnectionId: guildConnection.id,
+                    guildConnectionId,
                     messageContent: `Hey @everyone 👋 Today's session will be starting in ${time(date, 'R')}`,
                     scheduledDate: hourReminder,
                     channelId,

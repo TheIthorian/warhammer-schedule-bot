@@ -1,10 +1,8 @@
-import { PollResultsFormatter } from './../scheduling/types';
 import { PollService } from '../services/poll.service';
 import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
-import { GuildConnectionService } from '../services/guild-connection.service';
 import { ScheduleService } from '../scheduling/schedule-service';
 
 const log = makeLogger(module);
@@ -12,25 +10,20 @@ const log = makeLogger(module);
 export class ScheduleCommand implements Command {
     public readonly data: SlashCommandBuilder;
 
-    constructor(
-        private readonly partyScheduler: PollService,
-        private readonly guildConnectionService: GuildConnectionService,
-        private readonly scheduleService: ScheduleService
-    ) {
+    constructor(private readonly partyScheduler: PollService, private readonly scheduleService: ScheduleService) {
         this.data = new SlashCommandBuilder()
             .setName('schedule')
             .setDescription('Asks the group to schedule the next session');
     }
 
-    async execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
+    async execute(interaction: ChatInputCommandInteraction<CacheType>, guildConnectionId: number): Promise<void> {
         const ctx = logContext(
             `${ScheduleCommand.name}.${this.execute.name}`,
             getInteractionLogDetails(interaction),
             log
         );
 
-        const { guildId, user, channelId } = interaction;
-        const { id: guildConnectionId } = await this.guildConnectionService.getByGuildId(guildId);
+        const { user, channelId } = interaction;
 
         // Already in progress
         const validatePollInProgressResult = await this.scheduleService.validatePollInProgress(guildConnectionId);

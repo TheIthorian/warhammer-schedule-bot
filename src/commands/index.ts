@@ -8,12 +8,11 @@ import { PingCommand } from './ping';
 import { Command } from './types';
 import { reminderService } from '../services/reminder.service';
 import { rollService } from '../services/roll.service';
-import { guildConnectionService } from '../services/guild-connection.service';
 import { scheduleService } from '../scheduling/schedule-service';
 
 export const commands: Array<Command> = [
     new PingCommand(),
-    new ScheduleCommand(pollService, guildConnectionService, scheduleService),
+    new ScheduleCommand(pollService, scheduleService),
     new BookCommand(reminderService),
     new RollCommand(rollService),
 ];

@@ -9,7 +9,7 @@ const log = makeLogger(module);
 export abstract class InteractionRouter {
     constructor(private readonly spamProtection: SpamProtection) {}
 
-    async handle(interaction: Interaction): Promise<void> {
+    async handle(interaction: Interaction, guildConnectionId: number): Promise<void> {
         const ctx = logContext(`${InteractionRouter.name}.${this.handle.name}`, getInteractionLogDetails(interaction));
 
         const spamKey = this.getSpamKey(interaction);
@@ -29,7 +29,7 @@ export abstract class InteractionRouter {
 
         try {
             log.info(`${ctx} interaction handler found`);
-            await interactionHandler.execute(interaction);
+            await interactionHandler.execute(interaction, guildConnectionId);
         } catch (error) {
             log.error(`${ctx}`, error);
             console.error(error);
@@ -39,7 +39,9 @@ export abstract class InteractionRouter {
 
     protected abstract getSpamKey(interaction: Interaction): string;
 
-    protected abstract getHandler(interaction: Interaction): { execute: (interaction: Interaction) => Promise<void> };
+    protected abstract getHandler(interaction: Interaction): {
+        execute: (interaction: Interaction, guildConnectionId: number) => Promise<void>;
+    };
 
     protected async handleSpamError(interaction: Interaction, message: string) {
         await this.respond(interaction, message);

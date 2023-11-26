@@ -24,7 +24,7 @@ export class CommandInteractionRouter extends InteractionRouter {
 
     protected override getHandler(
         interaction: Interaction
-    ): { execute: (interaction: Interaction) => Promise<void> } | undefined {
+    ): { execute: (interaction: Interaction, guildConnectionId: number) => Promise<void> } | undefined {
         if (!interaction.isCommand()) {
             log.error('Interaction is not a command type');
             return;
