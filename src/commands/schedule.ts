@@ -99,11 +99,6 @@ export class ScheduleCommand implements Command {
         const schedulingMessageComponents = this.scheduleService.getSchedulingMessageComponents();
         const response = await interaction.reply(schedulingMessageComponents);
 
-        const daySelectCollector = response.createMessageComponentCollector({
-            componentType: ComponentType.StringSelect,
-            time: TIME_TO_REACT_MINUTES * 60 * 1_000,
-        });
-
         const buttonCollector = response.createMessageComponentCollector({
             componentType: ComponentType.Button,
             time: TIME_TO_REACT_MINUTES * 60 * 1_000,
