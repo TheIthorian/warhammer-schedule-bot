@@ -18,6 +18,9 @@ type ScheduledMessageDetails = {
 export class ScheduledMessageProcessor {
     constructor(private readonly discordClient: Client) {}
 
+    /**
+     * Activates the message processing
+     */
     public start() {
         schedule.scheduleJob('*/5 * * * *', async () => {
             log.info('processing scheduled message');

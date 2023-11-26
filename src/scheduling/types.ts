@@ -6,5 +6,9 @@ export type ScheduleResponse = {
 };
 
 export interface PollResultsFormatter {
+    /**
+     * Formats the result of a poll to a string.
+     * @param responses Responses to a poll, with `userId` as key.
+     */
     format(responses: Map<String, ScheduleResponse>): string;
 }
