@@ -9,13 +9,14 @@ import { PingCommand } from './ping';
 import { Command } from './types';
 import { reminderService } from '../services/reminder';
 import { RollService } from '../services/roll';
+import { guildConnectionService } from '../services/guild-connection';
 
 const partyScheduler = new PartyScheduler();
 const pollResultsFormatter = new AsciiPollResultsFormatter();
 
 export const commands: Array<Command> = [
     new PingCommand(),
-    new ScheduleCommand(partyScheduler, pollResultsFormatter),
+    new ScheduleCommand(partyScheduler, pollResultsFormatter, guildConnectionService),
     new BookCommand(reminderService),
     new RollCommand(new RollService()),
 ];

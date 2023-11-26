@@ -20,6 +20,7 @@ import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
 import { ScheduleResponse } from '../scheduling/types';
+import { GuildConnectionService } from '../services/guild-connection';
 
 const log = makeLogger(module);
 
@@ -30,7 +31,8 @@ export class ScheduleCommand implements Command {
 
     constructor(
         private readonly partyScheduler: PartyScheduler,
-        private readonly pollResultsFormatter: PollResultsFormatter
+        private readonly pollResultsFormatter: PollResultsFormatter,
+        private readonly guildConnectionService: GuildConnectionService
     ) {
         this.data = new SlashCommandBuilder()
             .setName('schedule')
@@ -44,12 +46,13 @@ export class ScheduleCommand implements Command {
             log
         );
 
-        const guildId = interaction.guildId;
+        const { guildId, user, channelId } = interaction;
+        const { id: guildConnectionId } = await this.guildConnectionService.getByGuildId(guildId);
 
         // Already in progress
-        if (this.partyScheduler.isExistScheduleInProgress(guildId)) {
+        if (await this.partyScheduler.isExistPollInProgress(guildConnectionId)) {
             log.info(`${ctx} scheduling is already in progress`);
-            return await this.sendScheduleInProgressMessage(interaction);
+            return await this.sendScheduleInProgressMessage(interaction, guildConnectionId);
         }
 
         // Start scheduling
@@ -58,12 +61,12 @@ export class ScheduleCommand implements Command {
         );
         const { id: messageId, url: messageUrl } = await response.fetch();
 
-        this.partyScheduler.addSchedulingMessage(guildId, messageId, messageUrl);
+        this.partyScheduler.createPoll({ messageId, channelId, userId: user.id, guildConnectionId, messageUrl });
 
         // Collect responses
         daySelectCollector.on('collect', async collectionResponse => {
             try {
-                await this.handleCollectDay(collectionResponse, interaction, { messageId, guildId });
+                await this.handleCollectDay(collectionResponse, interaction, { messageId, guildConnectionId });
             } catch (err) {
                 log.error(`${ctx} error collecting day select response ${err}`);
                 console.error(err);
@@ -75,7 +78,7 @@ export class ScheduleCommand implements Command {
                 buttonCollector.stop();
                 handleFinishPoll();
 
-                const results = this.partyScheduler.closeSchedule(guildId);
+                const results = await this.partyScheduler.closePoll(guildConnectionId);
                 const formattedResults = this.pollResultsFormatter.format(results);
 
                 const wasCancelled = collectionResponse.customId === 'cancel';
@@ -98,8 +101,11 @@ export class ScheduleCommand implements Command {
         });
     }
 
-    private async sendScheduleInProgressMessage(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
-        const { messageUrl } = this.partyScheduler.getInProgressSchedule(interaction.guildId);
+    private async sendScheduleInProgressMessage(
+        interaction: ChatInputCommandInteraction<CacheType>,
+        guildConnectionId: number
+    ): Promise<void> {
+        const [{ messageUrl }] = await this.partyScheduler.getInProgressPoll(guildConnectionId);
         await interaction.reply({
             content: `Scheduling is already in progress here: ${messageUrl}. Cancel it if you want to create a new one`,
             ephemeral: true,
@@ -154,7 +160,7 @@ export class ScheduleCommand implements Command {
     private async handleCollectDay(
         collectionResponse: StringSelectMenuInteraction<CacheType>,
         interaction: ChatInputCommandInteraction<CacheType>,
-        { messageId, guildId }: { messageId: string; guildId: string }
+        { messageId, guildConnectionId }: { messageId: string; guildConnectionId: number }
     ) {
         const ctx = logContext(`${ScheduleCommand.name}.${this.handleCollectDay.name}`);
         log.info(`${ctx} collected response from ${collectionResponse.user.id} for message ${messageId}`);
@@ -162,7 +168,6 @@ export class ScheduleCommand implements Command {
         const userScheduleResponse: ScheduleResponse = {
             days: collectionResponse.values as DayOfTheWeek[],
             userId: collectionResponse.user.id,
-            responseTime: collectionResponse.createdTimestamp,
         };
 
         await collectionResponse.reply({
@@ -170,9 +175,9 @@ export class ScheduleCommand implements Command {
             ephemeral: true,
         });
 
-        this.partyScheduler.addResponse(guildId, userScheduleResponse);
+        this.partyScheduler.addPollAnswer(guildConnectionId, userScheduleResponse);
 
-        if (this.partyScheduler.hasEveryoneResponded(guildId, interaction.guild.memberCount)) {
+        if (this.partyScheduler.hasEveryoneResponded(guildConnectionId, interaction.guild.memberCount)) {
             log.info(`${ctx} scheduling is finished`);
             await interaction.followUp({
                 content: 'Everyone has replied! You may close the poll',

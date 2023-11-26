@@ -1,63 +1,136 @@
-import { Collection } from 'discord.js';
 import { ScheduleResponse } from './types';
 import { logContext, makeLogger } from '../util/logger';
-
-type Scheduling = { messageId: string; messageUrl: string; responses: Map<string, ScheduleResponse> };
+import prisma from '../primsaClient';
+import { DayOfTheWeek } from '../constants';
 
 const log = makeLogger(module);
 
-export class PartyScheduler {
-    private readonly inProcessScheduling = new Collection<string, Scheduling>();
+type PollDetails = {
+    pollId: number;
+    guildConnectionId: number;
+    status: string;
+    messageId: string;
+    messageUrl: string;
+    channelId: string;
+    userId?: string;
+    answer?: string;
+};
 
-    public hasEveryoneResponded(guildId: string, guildMemberCount: number): boolean {
+type CreatePollInput = {
+    guildConnectionId: number;
+    messageId: string;
+    messageUrl: string;
+    channelId: string;
+    userId: string;
+};
+
+export class PartyScheduler {
+    public async hasEveryoneResponded(guildConnectionId: number, guildMemberCount: number): Promise<boolean> {
         // TODO - this should be role based?
-        const scheduling = this.getInProgressSchedule(guildId);
-        const numberOfResponses = scheduling.responses.size;
+        const pollDetails = await this.getInProgressPoll(guildConnectionId);
+        const numberOfResponses = pollDetails.length;
         return guildMemberCount - 1 <= numberOfResponses; // Ignore bot
     }
 
-    public isExistScheduleInProgress(guildId: string): boolean {
-        return this.inProcessScheduling.has(guildId);
+    public async isExistPollInProgress(guildConnectionId: number): Promise<boolean> {
+        const result = await prisma.poll.findFirst({
+            select: { id: true },
+            where: { guildConnectionId, status: 'inProgress' },
+            orderBy: { id: 'desc' },
+        });
+
+        return !!result;
     }
 
-    public getInProgressSchedule(guildId: string): Scheduling | null {
-        return this.inProcessScheduling.get(guildId);
+    public async getInProgressPoll(guildConnectionId: number): Promise<PollDetails[]> {
+        return await prisma.$queryRaw`SELECT P.id as pollId, 
+            P.guildConnectionId, P.status, P.messageId, P.messageUrl, P.channelId,
+            PA.userId, PA.answer
+        FROM Poll P
+        LEFT JOIN PollAnswer PA ON PA.pollId = P.id
+        WHERE P.guildConnectionId = ${guildConnectionId}
+        AND P.status = 'inProgress'
+        ORDER BY P.id, PA.userId`;
     }
 
-    public cancelSchedule(guildId: string): void {
-        this.inProcessScheduling.delete(guildId);
-    }
-
-    public closeSchedule(guildId: string): Map<string, ScheduleResponse> {
-        const responses = this.inProcessScheduling.get(guildId).responses;
-        this.inProcessScheduling.delete(guildId);
-        return responses;
-    }
-
-    public addSchedulingMessage(guildId: string, messageId: string, messageUrl: string): void {
-        const ctx = logContext(`${PartyScheduler.name}.${this.addSchedulingMessage.name}`, { guildId, messageId }, log);
-
-        if (this.isExistScheduleInProgress(guildId)) {
-            log.error(`${ctx} A scheduling is already in progress`);
-            throw new Error('A scheduling is already in progress');
-        }
-
-        this.inProcessScheduling.set(guildId, {
-            messageId,
-            messageUrl,
-            responses: new Map(),
+    public async cancelPoll(guildConnectionId: number): Promise<void> {
+        await prisma.poll.updateMany({
+            data: { status: 'cancelled' },
+            where: { guildConnectionId },
         });
     }
 
-    public addResponse(guildId: string, scheduleResponse: ScheduleResponse) {
-        const ctx = logContext(`${PartyScheduler.name}.${this.addResponse.name}`, { guildId }, log);
-        const scheduling = this.getInProgressSchedule(guildId);
+    public async closePoll(guildConnectionId: number): Promise<Map<string, ScheduleResponse>> {
+        type PollWithAnswers = { pollId: number; channelId: string; status: string; answer: string; userId: string };
+        const pollWithAnswers = await prisma.$queryRaw<PollWithAnswers[]>`SELECT P.id as pollId, P.channelId, P.status, 
+            PA.answer, PA.userId
+        FROM Poll P
+        JOIN PollAnswer PA ON PA.pollId = P.id
+        WHERE P.guildConnectionId = ${guildConnectionId}
+        AND P.status = 'inProgress'`;
 
-        if (!scheduling) {
-            log.error(`${ctx} Cannot add response as no scheduling is in progress`);
-            throw new Error('Cannot add response as no scheduling is in progress');
+        await prisma.$executeRaw`UPDATE Poll SET status = 'closed' WHERE id = ${pollWithAnswers[0].pollId}`;
+
+        const responsesByUser = new Map<string, ScheduleResponse>();
+        for (const { userId, answer } of pollWithAnswers) {
+            responsesByUser.set(userId, { days: answer.split(',') as DayOfTheWeek[], userId: userId });
         }
 
-        scheduling.responses.set(scheduleResponse.userId, scheduleResponse);
+        return responsesByUser;
+    }
+
+    public async createPoll({
+        messageId,
+        messageUrl,
+        channelId,
+        userId,
+        guildConnectionId,
+    }: CreatePollInput): Promise<void> {
+        const ctx = logContext(
+            `${PartyScheduler.name}.${this.createPoll.name}`,
+            { guildConnectionId, messageId, userId, channelId },
+            log
+        );
+
+        if (await this.isExistPollInProgress(guildConnectionId)) {
+            log.error(`${ctx} A poll is already in progress`);
+            throw new Error('A poll is already in progress');
+        }
+
+        await prisma.poll.create({
+            data: {
+                userId,
+                guildConnectionId,
+                messageId,
+                messageUrl,
+                channelId,
+                status: 'inProgress',
+            },
+        });
+    }
+
+    public async addPollAnswer(guildConnectionId: number, scheduleResponse: ScheduleResponse): Promise<void> {
+        const ctx = logContext(`${PartyScheduler.name}.${this.addPollAnswer.name}`, { guildConnectionId }, log);
+        const poll = await this.getInProgressPoll(guildConnectionId);
+
+        if (!poll) {
+            log.error(`${ctx} Cannot add response as no poll is in progress`);
+            throw new Error('Cannot add response as no poll is in progress');
+        }
+
+        const [{ pollId }] = await this.getInProgressPoll(guildConnectionId);
+
+        const answer = scheduleResponse.days.join(',');
+
+        await prisma.pollAnswer.upsert({
+            create: {
+                pollId,
+                guildConnectionId,
+                userId: scheduleResponse.userId,
+                answer,
+            },
+            update: { answer },
+            where: { pollId_userId: { pollId, userId: scheduleResponse.userId } },
+        });
     }
 }

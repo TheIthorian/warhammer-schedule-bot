@@ -26,11 +26,14 @@ model GuildConnection {
 }
 
 model Poll {
-  id                Int    @id @default(autoincrement())
-  userId            String
+  id                Int @id @default(autoincrement())
   guildConnectionId Int
 
-  status String
+  userId     String
+  messageId  String
+  messageUrl String
+  channelId  String
+  status     String
 
   PollAnswers     PollAnswer[]
   GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
@@ -38,13 +41,14 @@ model Poll {
 
 model PollAnswer {
   pollId            Int
-  userId            Int
-  answer            String
   guildConnectionId Int
+
+  userId String
+  answer String
 
   Poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
 
-  @@unique([pollId, userId, answer])
+  @@unique([pollId, userId])
 }
 
 model ScheduledMessage {
