@@ -56,7 +56,7 @@ export class PollService {
     public async cancelPoll(guildConnectionId: number): Promise<void> {
         await prisma.poll.updateMany({
             data: { status: 'cancelled' },
-            where: { guildConnectionId },
+            where: { guildConnectionId, status: 'inProgress' },
         });
     }
 
