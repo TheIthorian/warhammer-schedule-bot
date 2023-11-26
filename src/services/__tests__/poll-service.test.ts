@@ -1,4 +1,4 @@
-import { PartyScheduler } from '../party-scheduler';
+import { PollService } from '../poll-service';
 import prisma from '../../primsaClient';
 import { makeGuild } from '../../util/test-utils/record-generator';
 import { GuildConnection } from '@prisma/client';
@@ -12,7 +12,7 @@ describe('PartyScheduler', () => {
     const userId1 = randomUUID();
     const userId2 = randomUUID();
 
-    const partyScheduler = new PartyScheduler();
+    const partyScheduler = new PollService();
 
     beforeAll(async () => {
         const guild = await makeGuild();
@@ -48,6 +48,7 @@ describe('PartyScheduler', () => {
                 guildConnectionId: guildConnection.id,
                 userId,
                 answer: answers.join(','),
+                answeredDate: new Date(),
             },
         });
     }
@@ -202,6 +203,7 @@ describe('PartyScheduler', () => {
                 guildConnectionId: guildConnection.id,
                 userId: userId1,
                 answer: 'Friday,Monday',
+                answeredDate: expect.any(Date),
             });
         });
 

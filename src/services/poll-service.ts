@@ -1,4 +1,4 @@
-import { ScheduleResponse } from './types';
+import { ScheduleResponse } from '../scheduling/types';
 import { logContext, makeLogger } from '../util/logger';
 import prisma from '../primsaClient';
 import { DayOfTheWeek } from '../constants';
@@ -24,7 +24,7 @@ type CreatePollInput = {
     userId: string;
 };
 
-export class PartyScheduler {
+export class PollService {
     public async hasEveryoneResponded(guildConnectionId: number, guildMemberCount: number): Promise<boolean> {
         // TODO - this should be role based?
         const pollDetails = await this.getInProgressPoll(guildConnectionId);
@@ -50,7 +50,7 @@ export class PartyScheduler {
         LEFT JOIN PollAnswer PA ON PA.pollId = P.id
         WHERE P.guildConnectionId = ${guildConnectionId}
         AND P.status = 'inProgress'
-        ORDER BY P.id, PA.userId`;
+        ORDER BY P.id, PA.answeredDate asc`;
     }
 
     public async cancelPoll(guildConnectionId: number): Promise<void> {
@@ -87,7 +87,7 @@ export class PartyScheduler {
         guildConnectionId,
     }: CreatePollInput): Promise<void> {
         const ctx = logContext(
-            `${PartyScheduler.name}.${this.createPoll.name}`,
+            `${PollService.name}.${this.createPoll.name}`,
             { guildConnectionId, messageId, userId, channelId },
             log
         );
@@ -110,27 +110,28 @@ export class PartyScheduler {
     }
 
     public async addPollAnswer(guildConnectionId: number, scheduleResponse: ScheduleResponse): Promise<void> {
-        const ctx = logContext(`${PartyScheduler.name}.${this.addPollAnswer.name}`, { guildConnectionId }, log);
+        const ctx = logContext(`${PollService.name}.${this.addPollAnswer.name}`, { guildConnectionId }, log);
         const poll = await this.getInProgressPoll(guildConnectionId);
 
-        if (!poll) {
+        if (!poll.length) {
             log.error(`${ctx} Cannot add response as no poll is in progress`);
             throw new Error('Cannot add response as no poll is in progress');
         }
 
-        const [{ pollId }] = await this.getInProgressPoll(guildConnectionId);
+        const existingPoll = poll[0];
 
         const answer = scheduleResponse.days.join(',');
 
         await prisma.pollAnswer.upsert({
             create: {
-                pollId,
+                pollId: existingPoll.pollId,
                 guildConnectionId,
                 userId: scheduleResponse.userId,
                 answer,
+                answeredDate: new Date(),
             },
-            update: { answer },
-            where: { pollId_userId: { pollId, userId: scheduleResponse.userId } },
+            update: { answer, answeredDate: new Date() },
+            where: { pollId_userId: { pollId: existingPoll.pollId, userId: scheduleResponse.userId } },
         });
     }
 }

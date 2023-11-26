@@ -1,6 +1,6 @@
 import { DAYS_OF_THE_WEEK, DayOfTheWeek } from './../constants';
 import { PollResultsFormatter } from './../scheduling/types';
-import { PartyScheduler } from './../scheduling/party-scheduler';
+import { PollService } from '../services/poll-service';
 import {
     ActionRowBuilder,
     ButtonBuilder,
@@ -30,7 +30,7 @@ export class ScheduleCommand implements Command {
     public readonly data: SlashCommandBuilder;
 
     constructor(
-        private readonly partyScheduler: PartyScheduler,
+        private readonly partyScheduler: PollService,
         private readonly pollResultsFormatter: PollResultsFormatter,
         private readonly guildConnectionService: GuildConnectionService
     ) {

@@ -1,7 +1,7 @@
 import { RollCommand } from './roll';
 import { BookCommand } from './book';
 import { AsciiPollResultsFormatter } from './../scheduling/ascii-poll-results-formatter';
-import { PartyScheduler } from './../scheduling/party-scheduler';
+import { PollService } from '../services/poll-service';
 import { ScheduleCommand } from './schedule';
 import { linearSpamProtection } from './../spam';
 import { CommandInteractionRouter } from './router';
@@ -11,7 +11,7 @@ import { reminderService } from '../services/reminder';
 import { RollService } from '../services/roll';
 import { guildConnectionService } from '../services/guild-connection';
 
-const partyScheduler = new PartyScheduler();
+const partyScheduler = new PollService();
 const pollResultsFormatter = new AsciiPollResultsFormatter();
 
 export const commands: Array<Command> = [
