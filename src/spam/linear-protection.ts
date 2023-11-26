@@ -2,12 +2,14 @@ import { Collection } from 'discord.js';
 import { GetSpamValidationResult, SpamProtection } from './types';
 import { logContext, makeLogger } from '../util/logger';
 
-const COOLDOWN_DURATION_IN_SECONDS = 3;
+const DEFAULT_COOLDOWN_DURATION_IN_SECONDS = 3;
 
 const log = makeLogger(module);
 
 export class LinearSpamProtection implements SpamProtection {
     private readonly rateCounter = new Collection<string, Record<string, number>>();
+
+    constructor(private readonly timeoutAmount = DEFAULT_COOLDOWN_DURATION_IN_SECONDS) {}
 
     getSpamValidation(command: string, userId: string): GetSpamValidationResult {
         const ctx = logContext(`${LinearSpamProtection.name}.${this.getSpamValidation.name}`, { command, userId }, log);
@@ -28,7 +30,7 @@ export class LinearSpamProtection implements SpamProtection {
             return { ok: true };
         }
 
-        const expirationTime = lastCommandTime + COOLDOWN_DURATION_IN_SECONDS * 1000;
+        const expirationTime = lastCommandTime + this.timeoutAmount * 1000;
         if (now > expirationTime) {
             log.debug(`${ctx} within expiration time (${expirationTime})`);
             return { ok: true };
