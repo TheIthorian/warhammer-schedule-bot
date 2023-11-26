@@ -1,4 +1,3 @@
-import { DayOfTheWeek } from './../constants';
 import { PollResultsFormatter } from './../scheduling/types';
 import { PollService } from '../services/poll-service';
 import {
