@@ -92,6 +92,6 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
         const results = await this.pollService.closePoll(guildConnectionId);
         const formattedResults = this.pollResultsFormatter.format(results);
 
-        await interaction.followUp(`The poll was closed'}.\n${formattedResults}`);
+        await interaction.followUp(`The poll was closed.\n${formattedResults}`);
     }
 }
