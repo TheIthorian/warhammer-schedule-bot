@@ -1,61 +1,42 @@
-import { InteractionRouter } from '../types';
+import { InteractionRouter } from '../interaction-router';
 import { SpamProtection } from '../spam/types';
-import { CacheType, ChatInputCommandInteraction, Collection } from 'discord.js';
-import { logContext, makeLogger } from '../util/logger';
+import { Collection, Interaction } from 'discord.js';
+import { makeLogger } from '../util/logger';
 import { Command } from './types';
 
 const log = makeLogger(module);
 
-export class CommandInteractionRouter implements InteractionRouter {
+export class CommandInteractionRouter extends InteractionRouter {
     private readonly commandsByName = new Collection<string, Command>();
 
-    constructor(private readonly commands: Array<Command>, private readonly spamProtection: SpamProtection) {
+    constructor(private readonly commands: Array<Command>, spamProtection: SpamProtection) {
+        super(spamProtection);
+
         for (const command of this.commands) {
             this.commandsByName.set(command.data.name, command);
         }
     }
 
-    async handle(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
-        const ctx = logContext(`${CommandInteractionRouter.name}.${this.handle.name}`, {});
+    protected override getSpamKey(interaction: Interaction): string {
+        const commandName = interaction.isCommand() ? interaction.commandName : '(unknown)';
+        return commandName;
+    }
 
-        const command = this.commandsByName.get(interaction.commandName);
-
-        if (!command) {
-            log.info(`${ctx} ${interaction.commandName} is not supported`);
+    protected override getHandler(
+        interaction: Interaction
+    ): { execute: (interaction: Interaction) => Promise<void> } | undefined {
+        if (!interaction.isCommand()) {
+            log.error('Interaction is not a command type');
             return;
         }
 
-        const spamValidationResult = this.spamProtection.getSpamValidation(command.data.name, interaction.user.id);
-        if (spamValidationResult.ok === false) {
-            log.info(`${ctx} user hit spam limit for ${interaction.commandName}`);
-            await this.handleSpamError(interaction, spamValidationResult.message);
+        const commandHandler = this.commandsByName.get(interaction.commandName);
+        if (!commandHandler) {
+            log.info(`${interaction.commandName} is not supported`);
             return;
         }
 
-        try {
-            log.info(`${ctx} executing command [${command.data.name}]`);
-            await command.execute(interaction);
-        } catch (error) {
-            log.error(`${ctx}`, error);
-            console.error(error);
-            await this.handleError(interaction);
-        }
-    }
-
-    private async handleSpamError(interaction: ChatInputCommandInteraction<CacheType>, message: string) {
-        await this.respond(interaction, message);
-    }
-
-    private async handleError(interaction: ChatInputCommandInteraction<CacheType>) {
-        await this.respond(interaction, 'There was an error while executing this command!');
-    }
-
-    private async respond(interaction: ChatInputCommandInteraction<CacheType>, content: string) {
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content, ephemeral: true });
-            return;
-        }
-
-        await interaction.reply({ content, ephemeral: true });
+        log.info(`Found command handler ${commandHandler.data.name}`);
+        return commandHandler;
     }
 }
