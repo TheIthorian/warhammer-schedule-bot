@@ -53,16 +53,10 @@ export class MessageComponentInteractionRouter implements InteractionRouter {
         content: string
     ) {
         if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({
-                content,
-                ephemeral: true,
-            });
+            await interaction.followUp({ content, ephemeral: true });
             return;
         }
 
-        await interaction.reply({
-            content,
-            ephemeral: true,
-        });
+        await interaction.reply({ content, ephemeral: true });
     }
 }
