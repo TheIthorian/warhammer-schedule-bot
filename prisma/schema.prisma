@@ -43,8 +43,9 @@ model PollAnswer {
   pollId            Int
   guildConnectionId Int
 
-  userId String
-  answer String
+  userId       String
+  answer       String
+  answeredDate DateTime
 
   Poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
 
