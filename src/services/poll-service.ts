@@ -129,3 +129,5 @@ export class PollService {
         });
     }
 }
+
+export const pollService = new PollService();

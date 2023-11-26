@@ -7,8 +7,9 @@ import {
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder,
 } from 'discord.js';
-import { PollService } from '../services/poll-service';
+import { PollService, pollService } from '../services/poll-service';
 import { DAYS_OF_THE_WEEK } from '../constants';
+import { client } from '../discord-client';
 
 export type ValidatePollInProgressOutput = ValidatePollInProgressOutputTrue | ValidatePollInProgressOutputFalse;
 export type ValidatePollInProgressOutputTrue = { inProgress: true; reply: InteractionReplyOptions };
@@ -87,3 +88,5 @@ function pollControlButtonRow(): ActionRowBuilder<ButtonBuilder> {
 
     return row;
 }
+
+export const scheduleService = new ScheduleService(pollService, client);
