@@ -3,7 +3,6 @@ import { MessageComponentInteractionHandler } from './types';
 import { logContext, makeLogger } from '../util/logger';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { PollService } from '../services/poll.service';
-import { GuildConnectionService } from '../services/guild-connection.service';
 import { DayOfTheWeek } from '../constants';
 import { ScheduleService } from '../scheduling/schedule-service';
 import { PollResultsFormatter } from '../scheduling/types';
@@ -13,31 +12,31 @@ const log = makeLogger(module);
 export class SelectOptionInteraction implements MessageComponentInteractionHandler {
     constructor(
         private readonly pollService: PollService,
-        private readonly guildConnectionService: GuildConnectionService,
         private readonly scheduleService: ScheduleService,
         private readonly pollResultsFormatter: PollResultsFormatter
     ) {}
 
-    async execute(interaction: AnySelectMenuInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
+    async execute(
+        interaction: AnySelectMenuInteraction<CacheType> | ButtonInteraction<CacheType>,
+        guildConnectionId: number
+    ): Promise<void> {
         const ctx = logContext(
             `${SelectOptionInteraction.name}.${this.execute.name}`,
             { ...getInteractionLogDetails(interaction), messageId: interaction.message.id },
             log
         );
 
-        const guildConnection = await this.guildConnectionService.getByGuildId(interaction.guildId);
-
-        if (!(await this.pollService.isExistPollInProgress(guildConnection.id))) {
+        if (!(await this.pollService.isExistPollInProgress(guildConnectionId))) {
             log.error(`${ctx} - no poll in progress. Skipping message interaction.`);
             return;
         }
 
         if (interaction.isAnySelectMenu()) {
             log.info(`${ctx} Handling menu select`); // TODO - this should also check the messageId matches the poll's messageId
-            await this.handleChannelSelectMenu(interaction, guildConnection.id);
+            await this.handleChannelSelectMenu(interaction, guildConnectionId);
         } else if (interaction.isButton()) {
             log.info(`${ctx} Handling button click`);
-            await this.handleButtonClick(interaction, guildConnection.id);
+            await this.handleButtonClick(interaction, guildConnectionId);
         } else {
             log.info(`${ctx} unhandled interaction ${interaction}`);
         }
@@ -93,6 +92,6 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
         const results = await this.pollService.closePoll(guildConnectionId);
         const formattedResults = this.pollResultsFormatter.format(results);
 
-        await interaction.followUp(`The poll was closed'}.\n${formattedResults}`);
+        await interaction.followUp(`The poll was closed.\n${formattedResults}`);
     }
 }

@@ -1,16 +1,14 @@
 import { SelectOptionInteraction } from './select-option';
-import { linearSpamProtection } from './../spam/index';
 import { MessageComponentInteractionRouter } from './router';
 import { pollService } from '../services/poll.service';
-import { guildConnectionService } from '../services/guild-connection.service';
 import { InteractionType } from 'discord.js';
 import { scheduleService } from '../scheduling/schedule-service';
 import { AsciiPollResultsFormatter } from '../scheduling/ascii-poll-results-formatter';
+import { LinearSpamProtection } from '../spam/linear-protection';
 
 const interactionHandlers = {
     [InteractionType.MessageComponent]: new SelectOptionInteraction(
         pollService,
-        guildConnectionService,
         scheduleService,
         new AsciiPollResultsFormatter()
     ),
@@ -18,5 +16,5 @@ const interactionHandlers = {
 
 export const messageComponentInteractionRouter = new MessageComponentInteractionRouter(
     interactionHandlers,
-    linearSpamProtection
+    new LinearSpamProtection(0.1)
 );

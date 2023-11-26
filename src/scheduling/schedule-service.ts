@@ -20,7 +20,7 @@ const POLL_CREATION_TEXT = 'Hey @everyone 👋 Please select the days that you a
 export class ScheduleService {
     constructor(private readonly pollService: PollService, private readonly discordClient: Client) {}
 
-    public async validatePollInProgress(guildConnectionId): Promise<ValidatePollInProgressOutput> {
+    public async validatePollInProgress(guildConnectionId: number): Promise<ValidatePollInProgressOutput> {
         const [inProgressPoll] = await this.pollService.getInProgressPoll(guildConnectionId);
 
         if (inProgressPoll) {

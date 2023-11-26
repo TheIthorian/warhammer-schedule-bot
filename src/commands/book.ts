@@ -19,7 +19,7 @@ export class BookCommand implements Command {
             .setName('book'); // casts type back to slash command builder
     }
 
-    async execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
+    async execute(interaction: ChatInputCommandInteraction<CacheType>, guildConnectionId: number): Promise<void> {
         const ctx = logContext(`${BookCommand.name}.${this.execute.name}`, getInteractionLogDetails(interaction), log);
 
         const inputDateString = interaction.options.getString('date');
@@ -36,7 +36,7 @@ export class BookCommand implements Command {
             ephemeral: false,
         });
 
-        const { guildId, channelId } = interaction;
-        await this.reminderService.addReminder({ date: response.inputDate, guildId, channelId });
+        const { channelId } = interaction;
+        await this.reminderService.addReminder({ date: response.inputDate, guildConnectionId, channelId });
     }
 }

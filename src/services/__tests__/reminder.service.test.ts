@@ -61,7 +61,7 @@ describe('ReminderService', () => {
             const future = new Date();
             future.setMonth(future.getMonth() + 3);
 
-            await reminderService.addReminder({ date: future, guildId, channelId });
+            await reminderService.addReminder({ date: future, guildConnectionId, channelId });
 
             const dayReminder = new Date(future);
             dayReminder.setHours(10, 0, 0, 0);

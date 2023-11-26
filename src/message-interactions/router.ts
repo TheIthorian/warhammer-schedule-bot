@@ -18,7 +18,9 @@ export class MessageComponentInteractionRouter extends InteractionRouter {
         return (interaction.isMessageComponent() && interaction.message.id) || '(unknown)';
     }
 
-    protected override getHandler(interaction: Interaction): { execute: (interaction: Interaction) => Promise<void> } {
+    protected override getHandler(interaction: Interaction): {
+        execute: (interaction: Interaction, guildConnectionId: number) => Promise<void>;
+    } {
         const interactionHandler = this.interactionHandlers[interaction.type];
 
         if (!interactionHandler) {
