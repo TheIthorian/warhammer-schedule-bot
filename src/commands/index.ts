@@ -9,11 +9,13 @@ import { Command } from './types';
 import { reminderService } from '../services/reminder.service';
 import { rollService } from '../services/roll.service';
 import { scheduleService } from '../scheduling/schedule-service';
+import { QueryCommand } from './query';
 
 export const commands: Array<Command> = [
     new PingCommand(),
     new ScheduleCommand(pollService, scheduleService),
     new BookCommand(reminderService),
     new RollCommand(rollService),
+    new QueryCommand(),
 ];
 export const commandInteractionRouter = new CommandInteractionRouter(commands, linearSpamProtection);
