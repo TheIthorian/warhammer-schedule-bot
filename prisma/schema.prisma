@@ -44,7 +44,7 @@ model PollAnswer {
   guildConnectionId Int
 
   userId       String
-  username     String
+  username     String?
   answer       String
   answeredDate DateTime
 
