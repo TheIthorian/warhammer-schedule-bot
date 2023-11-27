@@ -5,6 +5,8 @@ export type ScheduleResponse = {
     userId: string;
 };
 
+export type ScheduleResponseWithUsername = { username: string } & ScheduleResponse;
+
 export interface PollResultsFormatter {
     /**
      * Formats the result of a poll to a string.
