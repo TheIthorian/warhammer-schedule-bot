@@ -24,24 +24,38 @@ export class QueryCommand implements Command {
     async execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
         const ctx = logContext(`${QueryCommand.name}.${this.execute.name}`, getInteractionLogDetails(interaction), log);
 
-        if (interaction.user.id !== MY_USER_ID) {
-            log.info(`${ctx} not my user!`);
-            await interaction.reply({ content: 'This command is not active for you', ephemeral: true });
-            return;
-        }
+        // if (interaction.user.id !== MY_USER_ID) {
+        //     log.info(`${ctx} not my user!`);
+        //     await interaction.reply({ content: 'This command is not active for you', ephemeral: true });
+        //     return;
+        // }
 
-        const url = `${config.aiService.url}/query/${interaction.options.get('input').value}`;
+        await interaction.deferReply({ ephemeral: false });
+
+        const questionInput = interaction.options.get('input').value;
+
+        const url = `${config.aiService.url}/query/${questionInput}`;
+        log.info(`${ctx} - query to: ${url}`);
+
         const response = await fetch(url, {
             headers: { api: config.aiService.apiKey! },
         });
 
+        if (!response.ok) {
+            log.error(`${ctx} error fetching response`, await response.text());
+            await interaction.followUp({
+                content: 'There was an error generating your response. Please try again later.',
+                ephemeral: true,
+            });
+            return;
+        }
+
         const queryResponse = await response.text();
+        const shortenedResponse = queryResponse.substring(0, 1900) + (queryResponse.length > 1900 ? '...' : '');
 
-        log.info(`${ctx} - query to: ${url}`);
-
-        await interaction.reply({
-            content: queryResponse.substring(0, 1900) + (queryResponse.length > 1900 ? '...' : ''),
-            ephemeral: true,
+        await interaction.followUp({
+            content: `Q: ${questionInput}\n\nA: ${shortenedResponse}`,
+            ephemeral: false,
         });
     }
 }
