@@ -1,3 +1,4 @@
+import { config } from '../config';
 import { logContext, makeLogger } from '../util/logger';
 
 const log = makeLogger(module);
@@ -30,3 +31,5 @@ export class QueryService {
         return `Q: ${questionInput}\n\nA: ${shortenedResponse}`;
     }
 }
+
+export const queryService = new QueryService(config.aiService.url, config.aiService.apiKey);

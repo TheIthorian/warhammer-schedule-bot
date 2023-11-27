@@ -2,16 +2,14 @@ import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'dis
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
-import { config } from '../config';
+import { QueryService } from '../services/query.service';
 
 const log = makeLogger(module);
-
-const MY_USER_ID = '207441971017547776';
 
 export class QueryCommand implements Command {
     public readonly data: SlashCommandBuilder;
 
-    constructor() {
+    constructor(private readonly queryService: QueryService) {
         this.data = new SlashCommandBuilder()
             .setName('query')
             .setDescription('Answers your questions!')
@@ -22,40 +20,14 @@ export class QueryCommand implements Command {
     }
 
     async execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
-        const ctx = logContext(`${QueryCommand.name}.${this.execute.name}`, getInteractionLogDetails(interaction), log);
-
-        // if (interaction.user.id !== MY_USER_ID) {
-        //     log.info(`${ctx} not my user!`);
-        //     await interaction.reply({ content: 'This command is not active for you', ephemeral: true });
-        //     return;
-        // }
+        logContext(`${QueryCommand.name}.${this.execute.name}`, getInteractionLogDetails(interaction), log);
 
         await interaction.deferReply({ ephemeral: false });
 
-        const questionInput = interaction.options.get('input').value;
+        const questionInput = interaction.options.get('input').value.toString();
 
-        const url = `${config.aiService.url}/query/${questionInput}`;
-        log.info(`${ctx} - query to: ${url}`);
+        const messageContent = await this.queryService.runQuery(questionInput);
 
-        const response = await fetch(url, {
-            headers: { api: config.aiService.apiKey! },
-        });
-
-        if (!response.ok) {
-            log.error(`${ctx} error fetching response`, await response.text());
-            await interaction.followUp({
-                content: 'There was an error generating your response. Please try again later.',
-                ephemeral: true,
-            });
-            return;
-        }
-
-        const queryResponse = await response.text();
-        const shortenedResponse = queryResponse.substring(0, 1900) + (queryResponse.length > 1900 ? '...' : '');
-
-        await interaction.followUp({
-            content: `Q: ${questionInput}\n\nA: ${shortenedResponse}`,
-            ephemeral: false,
-        });
+        await interaction.followUp(messageContent);
     }
 }
