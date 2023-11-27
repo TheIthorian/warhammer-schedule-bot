@@ -22,6 +22,11 @@ export const config = {
 
     isLocal: nodeEnv === 'local',
 
+    aiService: {
+        url: process.env.AI_SERVICE_URL,
+        apiKey: process.env.AI_SERVICE_API_KEY,
+    },
+
     discord: {
         baseAuthUrl: 'https://discord.com/oauth2/authorize',
         tokenUrl: 'https://discord.com/api/oauth2/token',
