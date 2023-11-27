@@ -1,4 +1,4 @@
-import { ScheduleResponse } from '../scheduling/types';
+import { ScheduleResponse, ScheduleResponseWithUsername } from '../scheduling/types';
 import { logContext, makeLogger } from '../util/logger';
 import prisma from '../primsaClient';
 import { DayOfTheWeek } from '../constants';
@@ -13,6 +13,7 @@ type PollDetails = {
     messageUrl: string;
     channelId: string;
     userId?: string;
+    username?: string;
     answer?: string;
 };
 
@@ -45,7 +46,7 @@ export class PollService {
     public async getInProgressPoll(guildConnectionId: number): Promise<PollDetails[]> {
         return await prisma.$queryRaw`SELECT P.id as pollId, 
             P.guildConnectionId, P.status, P.messageId, P.messageUrl, P.channelId,
-            PA.userId, PA.answer
+            PA.userId, PA.answer, PA.username
         FROM Poll P
         LEFT JOIN PollAnswer PA ON PA.pollId = P.id
         WHERE P.guildConnectionId = ${guildConnectionId}
@@ -61,9 +62,16 @@ export class PollService {
     }
 
     public async closePoll(guildConnectionId: number): Promise<Map<string, ScheduleResponse>> {
-        type PollWithAnswers = { pollId: number; channelId: string; status: string; answer: string; userId: string };
+        type PollWithAnswers = {
+            pollId: number;
+            channelId: string;
+            status: string;
+            answer: string;
+            userId: string;
+            username: string;
+        };
         const pollWithAnswers = await prisma.$queryRaw<PollWithAnswers[]>`SELECT P.id as pollId, P.channelId, P.status, 
-            PA.answer, PA.userId
+            PA.answer, PA.userId, PA.username
         FROM Poll P
         JOIN PollAnswer PA ON PA.pollId = P.id
         WHERE P.guildConnectionId = ${guildConnectionId}
@@ -103,7 +111,10 @@ export class PollService {
         });
     }
 
-    public async addPollAnswer(guildConnectionId: number, scheduleResponse: ScheduleResponse): Promise<void> {
+    public async addPollAnswer(
+        guildConnectionId: number,
+        scheduleResponse: ScheduleResponseWithUsername
+    ): Promise<void> {
         const ctx = logContext(`${PollService.name}.${this.addPollAnswer.name}`, { guildConnectionId }, log);
         const poll = await this.getInProgressPoll(guildConnectionId);
 
@@ -120,6 +131,7 @@ export class PollService {
             create: {
                 pollId: existingPoll.pollId,
                 guildConnectionId,
+                username: scheduleResponse.username,
                 userId: scheduleResponse.userId,
                 answer,
                 answeredDate: new Date(),

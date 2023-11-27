@@ -55,6 +55,7 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
         await this.pollService.addPollAnswer(guildConnectionId, {
             userId: interaction.user.id,
             days: interaction.values as DayOfTheWeek[],
+            username: interaction.user.username,
         });
 
         log.info(`${ctx} poll answer added.`);
