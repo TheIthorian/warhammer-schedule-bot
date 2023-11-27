@@ -58,6 +58,8 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
             username: interaction.user.username,
         });
 
+        await this.scheduleService.setResponders(interaction.channelId, guildConnectionId);
+
         log.info(`${ctx} poll answer added.`);
         interaction.reply({ content: `You have selected ${interaction.values.join(', ')}!`, ephemeral: true });
 

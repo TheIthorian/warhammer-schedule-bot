@@ -63,6 +63,24 @@ export class ScheduleService {
             });
         }
     }
+
+    public async setResponders(channelId: string, guildConnectionId: number): Promise<void> {
+        const channel = this.discordClient.channels.cache.get(channelId);
+        if (channel.isTextBased()) {
+            const inProgressPoll = await this.pollService.getInProgressPoll(guildConnectionId);
+            const responderUsernames = inProgressPoll.map(pollAnswer => pollAnswer.username);
+
+            const messageId = inProgressPoll[0].messageId;
+            const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
+
+            const messageContent = this.getSchedulingMessageComponents();
+
+            pollMessage.edit({
+                components: messageContent.components,
+                content: `${POLL_CREATION_TEXT}\n(This poll has been answered by ${responderUsernames.join(', ')})`,
+            });
+        }
+    }
 }
 
 function daysOfTheWeekMenuRow(): ActionRowBuilder<StringSelectMenuBuilder> {
