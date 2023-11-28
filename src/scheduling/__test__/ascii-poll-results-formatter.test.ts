@@ -36,6 +36,23 @@ describe('AsciiPollResultsFormatter', () => {
 
         expect(formattedResult).toMatchSnapshot();
     });
+
+    test('format method returns a formatted string of the results for non-max response', () => {
+        const responses2 = new Map<string, ScheduleResponse>();
+        responses2.set('user:1', {
+            days: ['Monday'],
+            userId: 'user:1',
+        });
+
+        responses2.set('user:2', {
+            days: ['Tuesday'],
+            userId: 'user:2',
+        });
+
+        const formattedResult = formatter.format(responses2);
+
+        expect(formattedResult).toMatchSnapshot();
+    });
 });
 
 describe('extractResponses', () => {
