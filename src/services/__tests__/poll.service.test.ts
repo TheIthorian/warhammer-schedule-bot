@@ -13,6 +13,9 @@ describe('PartyScheduler', () => {
     const userId1 = randomUUID();
     const userId2 = randomUUID();
 
+    const username1 = faker.internet.userName();
+    const username2 = faker.internet.userName();
+
     const partyScheduler = new PollService();
 
     beforeAll(async () => {
@@ -42,12 +45,14 @@ describe('PartyScheduler', () => {
         });
     }
 
-    async function createPollAnswer(pollId: number, userId: string, answers: string[]) {
+    type CreatePollAnswerInput = { pollId: number; userId: string; answers: string[]; username: string };
+    async function createPollAnswer({ pollId, userId, answers, username }: CreatePollAnswerInput) {
         return await prisma.pollAnswer.create({
             data: {
                 pollId,
                 guildConnectionId: guildConnection.id,
                 userId,
+                username,
                 answer: answers.join(','),
                 answeredDate: new Date(),
             },
@@ -57,15 +62,25 @@ describe('PartyScheduler', () => {
     describe('hasEveryoneResponded', () => {
         test('should return true when everyone has responded', async () => {
             const poll = await createPoll(userId1);
-            await createPollAnswer(poll.id, userId1, ['Monday', 'Tuesday']);
-            await createPollAnswer(poll.id, userId2, ['Tuesday']);
+            await createPollAnswer({
+                pollId: poll.id,
+                userId: userId1,
+                answers: ['Monday', 'Tuesday'],
+                username: username1,
+            });
+            await createPollAnswer({ pollId: poll.id, userId: userId2, answers: ['Tuesday'], username: username2 });
 
             expect(await partyScheduler.hasEveryoneResponded(guildConnection.id, 3)).toBe(true);
         });
 
         test('should return false when not everyone has responded', async () => {
             const poll = await createPoll(userId1);
-            await createPollAnswer(poll.id, userId1, ['Monday', 'Tuesday']);
+            await createPollAnswer({
+                pollId: poll.id,
+                userId: userId1,
+                answers: ['Monday', 'Tuesday'],
+                username: username1,
+            });
 
             expect(await partyScheduler.hasEveryoneResponded(guildConnection.id, 3)).toBe(false);
         });
@@ -92,9 +107,14 @@ describe('PartyScheduler', () => {
     describe('getInProgressPoll', () => {
         test('should return in-progress poll details', async () => {
             const poll1 = await createPoll(userId1);
-            await createPollAnswer(poll1.id, userId1, ['Monday', 'Tuesday']);
+            await createPollAnswer({
+                pollId: poll1.id,
+                userId: userId1,
+                answers: ['Monday', 'Tuesday'],
+                username: username1,
+            });
             await setTimeout(100); // Make ordering predictable
-            await createPollAnswer(poll1.id, userId2, ['Tuesday']);
+            await createPollAnswer({ pollId: poll1.id, userId: userId2, answers: ['Tuesday'], username: username2 });
 
             expect(await partyScheduler.getInProgressPoll(guildConnection.id)).toStrictEqual([
                 {
@@ -105,6 +125,7 @@ describe('PartyScheduler', () => {
                     messageUrl,
                     channelId,
                     userId: userId1,
+                    username: username1,
                     answer: 'Monday,Tuesday',
                 },
                 {
@@ -115,6 +136,7 @@ describe('PartyScheduler', () => {
                     messageUrl,
                     channelId,
                     userId: userId2,
+                    username: username2,
                     answer: 'Tuesday',
                 },
             ]);
@@ -128,8 +150,13 @@ describe('PartyScheduler', () => {
     describe('cancelPoll', () => {
         test('should cancel the poll', async () => {
             const poll1 = await createPoll(userId1);
-            await createPollAnswer(poll1.id, userId1, ['Monday', 'Tuesday']);
-            await createPollAnswer(poll1.id, userId2, ['Tuesday']);
+            await createPollAnswer({
+                pollId: poll1.id,
+                userId: userId1,
+                answers: ['Monday', 'Tuesday'],
+                username: username1,
+            });
+            await createPollAnswer({ pollId: poll1.id, userId: userId2, answers: ['Tuesday'], username: username2 });
 
             await partyScheduler.cancelPoll(guildConnection.id);
 
@@ -142,8 +169,13 @@ describe('PartyScheduler', () => {
     describe('closePoll', () => {
         test('should close the poll and return responses', async () => {
             const poll1 = await createPoll(userId1);
-            await createPollAnswer(poll1.id, userId1, ['Monday', 'Tuesday']);
-            await createPollAnswer(poll1.id, userId2, ['Tuesday']);
+            await createPollAnswer({
+                pollId: poll1.id,
+                userId: userId1,
+                answers: ['Monday', 'Tuesday'],
+                username: username1,
+            });
+            await createPollAnswer({ pollId: poll1.id, userId: userId2, answers: ['Tuesday'], username: username2 });
 
             const pollResults = await partyScheduler.closePoll(guildConnection.id);
 
@@ -198,12 +230,17 @@ describe('PartyScheduler', () => {
         test('should add a poll answer', async () => {
             const poll = await createPoll(userId1);
 
-            await partyScheduler.addPollAnswer(guildConnection.id, { userId: userId1, days: ['Friday', 'Monday'] });
+            await partyScheduler.addPollAnswer(guildConnection.id, {
+                userId: userId1,
+                days: ['Friday', 'Monday'],
+                username: username1,
+            });
 
             expect(await prisma.pollAnswer.findFirst()).toStrictEqual({
                 pollId: poll.id,
                 guildConnectionId: guildConnection.id,
                 userId: userId1,
+                username: username1,
                 answer: 'Friday,Monday',
                 answeredDate: expect.any(Date),
             });
@@ -211,7 +248,11 @@ describe('PartyScheduler', () => {
 
         test('should throw an error if no poll is in progress', async () => {
             expect(async () => {
-                await partyScheduler.addPollAnswer(guildConnection.id, { userId: userId1, days: ['Friday', 'Monday'] });
+                await partyScheduler.addPollAnswer(guildConnection.id, {
+                    userId: userId1,
+                    days: ['Friday', 'Monday'],
+                    username: username1,
+                });
             }).rejects.toThrow('Cannot add response as no poll is in progress');
         });
     });

@@ -8,14 +8,14 @@ import {
     StringSelectMenuOptionBuilder,
 } from 'discord.js';
 import { PollService, pollService } from '../services/poll.service';
-import { DAYS_OF_THE_WEEK } from '../constants';
+import { DAYS_OF_THE_WEEK, DayOfTheWeek } from '../constants';
 import { client } from '../discord-client';
 
 export type ValidatePollInProgressOutput = ValidatePollInProgressOutputTrue | ValidatePollInProgressOutputFalse;
 export type ValidatePollInProgressOutputTrue = { inProgress: true; reply: InteractionReplyOptions };
 export type ValidatePollInProgressOutputFalse = { inProgress: false };
 
-const POLL_CREATION_TEXT = 'Hey @everyone 👋 Please select the days that you are available next week';
+const POLL_CREATION_TEXT = 'Hey everyone 👋 Please select the days that you are available next week';
 
 export class ScheduleService {
     constructor(private readonly pollService: PollService, private readonly discordClient: Client) {}
@@ -61,6 +61,33 @@ export class ScheduleService {
                 components: [disabledDaysOfTheWeekMenuRow],
                 content: `${POLL_CREATION_TEXT}\n(this poll has ended)`,
             });
+        }
+    }
+
+    public async addPollResponse(input: {
+        userId: string;
+        username: string;
+        answer: DayOfTheWeek[];
+        channelId: string;
+        guildConnectionId: number;
+    }): Promise<void> {
+        const channel = this.discordClient.channels.cache.get(input.channelId);
+        if (channel.isTextBased()) {
+            await this.pollService.addPollAnswer(input.guildConnectionId, {
+                userId: input.userId,
+                days: input.answer,
+                username: input.username,
+            });
+
+            const inProgressPoll = await this.pollService.getInProgressPoll(input.guildConnectionId);
+            const messageId = inProgressPoll[0].messageId;
+            const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
+
+            const thread = pollMessage.hasThread
+                ? pollMessage.thread
+                : await pollMessage.startThread({ name: 'Responders' });
+
+            await thread.send(`${input.username} selected ${input.answer.join(', ')}`);
         }
     }
 }
