@@ -73,14 +73,13 @@ export class ScheduleService {
     }): Promise<void> {
         const channel = this.discordClient.channels.cache.get(input.channelId);
         if (channel.isTextBased()) {
-            const inProgressPoll = await this.pollService.getInProgressPoll(input.guildConnectionId);
-
             await this.pollService.addPollAnswer(input.guildConnectionId, {
                 userId: input.userId,
                 days: input.answer,
                 username: input.username,
             });
 
+            const inProgressPoll = await this.pollService.getInProgressPoll(input.guildConnectionId);
             const messageId = inProgressPoll[0].messageId;
             const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
 
