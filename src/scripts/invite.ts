@@ -1,14 +1,11 @@
 import { config } from '../config';
 
 type GetInviteLinkInput = { clientId: string; permissionsInt: number };
-export function getInviteLink({
-    clientId,
-    permissionsInt,
-}: GetInviteLinkInput) {
+export function getInviteLink({ clientId, permissionsInt }: GetInviteLinkInput) {
     const url = new URL('https://discord.com/api/oauth2/authorize');
     url.searchParams.set('client_id', clientId);
     url.searchParams.set('permissions', permissionsInt.toString());
-    url.searchParams.set('scope', 'bot applications.commands');
+    url.searchParams.set('scope', 'bot');
 
     return url.toString();
 }
