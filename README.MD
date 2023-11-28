@@ -44,12 +44,13 @@ gcloud app deploy app.prod.yaml
 
 ## Commands
 
-| command      | description                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| /ping        | Replies with Pong!                                                                            |
-| /schedule    | Asks everyone which days they are available for the next session                              |
-| /book :date | Books in a session for the given date. Will send a reminder to everyone closer scheduled date |
-| /roll :dice | Roll dice                                                                                     |
+| command          | description                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| /ping            | Replies with Pong!                                                                            |
+| /schedule        | Asks everyone which days they are available for the next session                              |
+| /book :date      | Books in a session for the given date. Will send a reminder to everyone closer scheduled date |
+| /roll :dice      | Roll dice                                                                                     |
+| /query :question | Ask ai a question about the rule book                                                         |
 
 ## Required Permissions
 
