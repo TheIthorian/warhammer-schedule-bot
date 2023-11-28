@@ -6,8 +6,13 @@ const log = makeLogger(module);
 export class QueryService {
     constructor(private readonly url: string, private readonly api: string) {}
 
-    async runQuery(queryInput: string): Promise<{ responseContent: string; ephemeral: boolean }> {
+    async runQuery(queryInput?: string): Promise<{ content: string; ephemeral: boolean }> {
         const ctx = logContext(`${QueryService.name}.${this.runQuery.name}`, { queryInput });
+
+        if (!queryInput) {
+            log.info(`${ctx} No input provided`);
+            return { content: 'Please provide an input', ephemeral: true };
+        }
 
         const url = `${this.url}/query/${queryInput}`;
         log.info(`${ctx} calling query at "${url}"`);
@@ -17,13 +22,13 @@ export class QueryService {
         if (!response.ok) {
             log.error(`${ctx} error fetching response`, await response.text());
             return {
-                responseContent: 'There was an error generating your response. Please try again later.',
+                content: 'There was an error generating your response. Please try again later.',
                 ephemeral: true,
             };
         }
 
         const queryResponseText = await response.text();
-        return { responseContent: this.formatQueryResponse(queryInput, queryResponseText), ephemeral: false };
+        return { content: this.formatQueryResponse(queryInput, queryResponseText), ephemeral: false };
     }
 
     private formatQueryResponse(questionInput: string, queryResponse: string): string {

@@ -26,7 +26,7 @@ describe('QueryService', () => {
         });
 
         expect(result).toEqual({
-            responseContent: 'Q: exampleQuery\n\nA: Mocked response content',
+            content: 'Q: exampleQuery\n\nA: Mocked response content',
             ephemeral: false,
         });
     });
@@ -47,7 +47,7 @@ describe('QueryService', () => {
         });
 
         expect(result).toEqual({
-            responseContent: 'There was an error generating your response. Please try again later.',
+            content: 'There was an error generating your response. Please try again later.',
             ephemeral: true,
         });
     });
@@ -67,7 +67,7 @@ describe('QueryService', () => {
             headers: { api: apiKey },
         });
 
-        expect(result.responseContent).toMatchSnapshot();
+        expect(result.content).toMatchSnapshot();
         expect(result.ephemeral).toBe(false);
     });
 });

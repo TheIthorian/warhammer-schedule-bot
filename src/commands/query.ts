@@ -24,7 +24,7 @@ export class QueryCommand implements Command {
 
         await interaction.deferReply({ ephemeral: false });
 
-        const questionInput = interaction.options.get('input').value.toString();
+        const questionInput = interaction.options.get('input').value?.toString();
 
         const messageContent = await this.queryService.runQuery(questionInput);
 
