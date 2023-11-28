@@ -10,3 +10,14 @@ exports[`AsciiPollResultsFormatter format method returns a formatted string of t
 (0)	Sunday   	|                    |
 (0)	Thursday 	|                    |\`\`\`"
 `;
+
+exports[`AsciiPollResultsFormatter format method returns a formatted string of the results for non-max response 1`] = `
+"\`\`\`md
+(1)	Monday   	|██████████          |
+(1)	Tuesday  	|██████████          |
+(0)	Friday   	|                    |
+(0)	Saturday 	|                    |
+(0)	Sunday   	|                    |
+(0)	Thursday 	|                    |
+(0)	Wednesday	|                    |\`\`\`"
+`;

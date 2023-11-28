@@ -4,6 +4,23 @@
 
 https://discordjs.guide/creating-your-bot/command-deployment.html#guild-commands
 
+## Setting environment variables
+
+```sh
+APPLICATION_ID= # Application Id from creating discord bot
+PUBLIC_KEY= # Public key from creating discord bot
+BOT_TOKEN= # Client secret that must be generated and hidden
+
+CLIENT_ID= # Same as application Id. This will be replaced by Application Id in future.
+CLIENT_SECRET= # Idk where this came from ??
+
+AI_SERVICE_URL= # Url for the ai service
+AI_SERVICE_API_KEY= # Application key for the ai service
+
+DATABASE_URL="file:./dev.db" # Database to store persistent data
+TEST_DATABASE_URL="file:./dev.test.db" # Test database swapped out during tests
+```
+
 ## Running
 
 ```sh
@@ -19,20 +36,15 @@ First, the commands need to be uploaded to discord
 npm run deploy-commands
 ```
 
-Then the app can be deployed
-
-```sh
-gcloud app deploy app.prod.yaml
-```
-
 ## Commands
 
-| command      | description                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| /ping        | Replies with Pong!                                                                            |
-| /schedule    | Asks everyone which days they are available for the next session                              |
-| /book :date | Books in a session for the given date. Will send a reminder to everyone closer scheduled date |
-| /roll :dice | Roll dice                                                                                     |
+| command          | description                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| /ping            | Replies with Pong!                                                                            |
+| /schedule        | Asks everyone which days they are available for the next session                              |
+| /book :date      | Books in a session for the given date. Will send a reminder to everyone closer scheduled date |
+| /roll :dice      | Roll dice                                                                                     |
+| /query :question | Ask ai a question about the rule book                                                         |
 
 ## Required Permissions
 
