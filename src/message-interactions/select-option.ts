@@ -52,16 +52,16 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
             log
         );
 
-        await this.pollService.addPollAnswer(guildConnectionId, {
+        await this.scheduleService.addPollResponse({
             userId: interaction.user.id,
-            days: interaction.values as DayOfTheWeek[],
             username: interaction.user.username,
+            answer: interaction.values as DayOfTheWeek[],
+            channelId: interaction.channelId,
+            guildConnectionId,
         });
 
-        await this.scheduleService.setResponders(interaction.channelId, guildConnectionId);
-
         log.info(`${ctx} poll answer added.`);
-        interaction.reply({ content: `You have selected ${interaction.values.join(', ')}!`, ephemeral: true });
+        await interaction.reply({ content: `You have selected ${interaction.values.join(', ')}!`, ephemeral: true });
 
         if (await this.pollService.hasEveryoneResponded(guildConnectionId, interaction.guild.memberCount)) {
             log.info(`${ctx} everyone has responded.`);
