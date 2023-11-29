@@ -50,14 +50,15 @@ export class ScheduleService {
     }
 
     public async disablePoll(channelId: string, messageId: string): Promise<void> {
-        const channel = this.discordClient.channels.cache.get(channelId);
+        const channel =
+            this.discordClient.channels.cache.get(channelId) || (await this.discordClient.channels.fetch(channelId));
         if (channel.isTextBased()) {
             const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
 
             const disabledDaysOfTheWeekMenuRow = daysOfTheWeekMenuRow();
             disabledDaysOfTheWeekMenuRow.components.forEach(c => c.setDisabled(true));
 
-            pollMessage.edit({
+            await pollMessage.edit({
                 components: [disabledDaysOfTheWeekMenuRow],
                 content: `${POLL_CREATION_TEXT}\n(this poll has ended)`,
             });

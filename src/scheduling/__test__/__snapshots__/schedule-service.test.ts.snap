@@ -1,0 +1,258 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ScheduleService disablePoll replaces the message with disabled components when the channel is not cached 1`] = `
+[
+  {
+    "components": [
+      {
+        "components": [
+          {
+            "custom_id": "scheduler",
+            "disabled": true,
+            "max_values": 7,
+            "min_values": 0,
+            "options": [
+              {
+                "emoji": undefined,
+                "label": "Monday",
+                "value": "Monday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Tuesday",
+                "value": "Tuesday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Wednesday",
+                "value": "Wednesday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Thursday",
+                "value": "Thursday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Friday",
+                "value": "Friday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Saturday",
+                "value": "Saturday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Sunday",
+                "value": "Sunday",
+              },
+            ],
+            "placeholder": "Make a selection!",
+            "type": 3,
+          },
+        ],
+        "type": 1,
+      },
+    ],
+    "content": "Hey everyone 👋 Please select the days that you are available next week
+(this poll has ended)",
+  },
+]
+`;
+
+exports[`ScheduleService disablePoll replaces the message with disabled components when the message is cached 1`] = `
+[
+  {
+    "components": [
+      {
+        "components": [
+          {
+            "custom_id": "scheduler",
+            "disabled": true,
+            "max_values": 7,
+            "min_values": 0,
+            "options": [
+              {
+                "emoji": undefined,
+                "label": "Monday",
+                "value": "Monday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Tuesday",
+                "value": "Tuesday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Wednesday",
+                "value": "Wednesday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Thursday",
+                "value": "Thursday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Friday",
+                "value": "Friday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Saturday",
+                "value": "Saturday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Sunday",
+                "value": "Sunday",
+              },
+            ],
+            "placeholder": "Make a selection!",
+            "type": 3,
+          },
+        ],
+        "type": 1,
+      },
+    ],
+    "content": "Hey everyone 👋 Please select the days that you are available next week
+(this poll has ended)",
+  },
+]
+`;
+
+exports[`ScheduleService disablePoll replaces the message with disabled components when the message is not cached 1`] = `
+[
+  {
+    "components": [
+      {
+        "components": [
+          {
+            "custom_id": "scheduler",
+            "disabled": true,
+            "max_values": 7,
+            "min_values": 0,
+            "options": [
+              {
+                "emoji": undefined,
+                "label": "Monday",
+                "value": "Monday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Tuesday",
+                "value": "Tuesday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Wednesday",
+                "value": "Wednesday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Thursday",
+                "value": "Thursday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Friday",
+                "value": "Friday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Saturday",
+                "value": "Saturday",
+              },
+              {
+                "emoji": undefined,
+                "label": "Sunday",
+                "value": "Sunday",
+              },
+            ],
+            "placeholder": "Make a selection!",
+            "type": 3,
+          },
+        ],
+        "type": 1,
+      },
+    ],
+    "content": "Hey everyone 👋 Please select the days that you are available next week
+(this poll has ended)",
+  },
+]
+`;
+
+exports[`ScheduleService getSchedulingMessageComponents should return the message components 1`] = `
+{
+  "components": [
+    {
+      "custom_id": "scheduler",
+      "max_values": 7,
+      "min_values": 0,
+      "options": [
+        {
+          "emoji": undefined,
+          "label": "Monday",
+          "value": "Monday",
+        },
+        {
+          "emoji": undefined,
+          "label": "Tuesday",
+          "value": "Tuesday",
+        },
+        {
+          "emoji": undefined,
+          "label": "Wednesday",
+          "value": "Wednesday",
+        },
+        {
+          "emoji": undefined,
+          "label": "Thursday",
+          "value": "Thursday",
+        },
+        {
+          "emoji": undefined,
+          "label": "Friday",
+          "value": "Friday",
+        },
+        {
+          "emoji": undefined,
+          "label": "Saturday",
+          "value": "Saturday",
+        },
+        {
+          "emoji": undefined,
+          "label": "Sunday",
+          "value": "Sunday",
+        },
+      ],
+      "placeholder": "Make a selection!",
+      "type": 3,
+    },
+  ],
+  "type": 1,
+}
+`;
+
+exports[`ScheduleService getSchedulingMessageComponents should return the message components 2`] = `
+{
+  "components": [
+    {
+      "custom_id": "close",
+      "emoji": undefined,
+      "label": "Close Poll",
+      "style": 2,
+      "type": 2,
+    },
+    {
+      "custom_id": "cancel",
+      "emoji": undefined,
+      "label": "Cancel",
+      "style": 4,
+      "type": 2,
+    },
+  ],
+  "type": 1,
+}
+`;
