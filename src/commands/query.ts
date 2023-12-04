@@ -16,15 +16,17 @@ export class QueryCommand implements Command {
             .addStringOption(option =>
                 option.setName('input').setDescription('Your question to the AI').setRequired(true)
             )
+            .addBooleanOption(option => option.setName('secret').setDescription('Only you will see the response'))
             .setName('query');
     }
 
     async execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
         logContext(`${QueryCommand.name}.${this.execute.name}`, getInteractionLogDetails(interaction), log);
 
-        await interaction.deferReply({ ephemeral: false });
-
         const questionInput = interaction.options.get('input').value?.toString();
+        const isSecret = interaction.options.get('secret').value || false;
+
+        await interaction.deferReply({ ephemeral: !!isSecret });
 
         const messageContent = await this.queryService.runQuery(questionInput);
 
