@@ -28,6 +28,7 @@ export class ScheduledMessageProcessor {
                 await this.processMessages();
             } catch (error) {
                 log.error(`error when processing schedule messages`, error);
+                console.error(error);
             }
         });
     }
