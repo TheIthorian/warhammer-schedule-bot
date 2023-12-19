@@ -9,6 +9,8 @@ type ScheduledMessageDetails = {
     id: number;
     messageContent: string;
     channelId: string;
+    status: string;
+    retryCount: number;
 };
 
 /**
@@ -46,7 +48,7 @@ export class ScheduledMessageProcessor {
                 processedIds.push(message.id);
             } catch (error) {
                 log.error(`error sending message (${message.id})`, error);
-                await this.setMessageToFailed(message.id);
+                await this.processFailedMessage(message);
             }
         }
 
@@ -56,8 +58,8 @@ export class ScheduledMessageProcessor {
 
     private async getMessagesToProcess(): Promise<ScheduledMessageDetails[]> {
         return prisma.scheduledMessage.findMany({
-            select: { id: true, messageContent: true, channelId: true },
-            where: { scheduledDate: { lt: new Date() }, status: 'pending' },
+            select: { id: true, messageContent: true, channelId: true, status: true, retryCount: true },
+            where: { scheduledDate: { lt: new Date() }, status: { in: ['pending', 'retry'] } },
             orderBy: { id: 'asc' },
         });
     }
@@ -71,9 +73,16 @@ export class ScheduledMessageProcessor {
         }
     }
 
-    private async setMessageToFailed(id: number): Promise<void> {
+    private async processFailedMessage({ id, retryCount }: ScheduledMessageDetails): Promise<void> {
         try {
-            await prisma.scheduledMessage.update({ where: { id }, data: { status: 'failed' } });
+            if (retryCount > 2) {
+                await prisma.scheduledMessage.update({ where: { id }, data: { status: 'failed' } });
+            } else {
+                await prisma.scheduledMessage.update({
+                    where: { id },
+                    data: { status: 'retry', retryCount: retryCount + 1 },
+                });
+            }
         } catch (error) {
             log.error(`Error updating schedule ${id} setting status to failed`);
         }
