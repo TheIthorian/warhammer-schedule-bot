@@ -1,7 +1,11 @@
-import { Events, Interaction } from 'discord.js';
+import { Events, PartialUser } from 'discord.js';
 import { config } from './config';
 import { commandInteractionRouter } from './commands';
-import { messageComponentInteractionRouter } from './message-interactions';
+import {
+    messageComponentInteractionRouter,
+    messageReactAddHandler,
+    messageReactRemoveHandler,
+} from './message-interactions';
 import { makeLogger } from './util/logger';
 import { ScheduledMessageProcessor } from './scheduling';
 import { client } from './discord-client';
@@ -11,17 +15,46 @@ const log = makeLogger(module);
 
 export async function start() {
     client.on(Events.ClientReady, () => {
-        log.info(`Client Ready - logged in as ${client.user?.tag}!`);
+        const clientUser = client.user;
+        log.info({ userId: clientUser.id }, `Client Ready - logged in as ${clientUser.tag}!`);
+        config.discordBotUserId = clientUser.id;
     });
 
     client.on(Events.InteractionCreate, async interaction => {
+        log.info('Events.InteractionCreate');
+
         try {
-            const { id: guildConnectionId } = await createGuildConnectionIfNeeded(interaction);
+            const { id: guildConnectionId } = await createGuildConnectionIfNeeded({
+                guildId: interaction.guildId,
+                userId: interaction.user.id,
+                connectionUserUsername: interaction.user.username,
+            });
+
             if (interaction.isChatInputCommand()) await commandInteractionRouter.handle(interaction, guildConnectionId);
             else if (interaction.isMessageComponent())
                 await messageComponentInteractionRouter.handle(interaction, guildConnectionId);
         } catch (error) {
-            log.error('Error handling interactions', error);
+            log.error(error, 'Error handling interactions');
+        }
+    });
+
+    client.on(Events.MessageReactionAdd, async (interaction, reactionUser) => {
+        log.info({ reactionUser: reactionUser.username }, 'Events.MessageReactionAdd');
+
+        try {
+            await messageReactAddHandler.execute(interaction, reactionUser);
+        } catch (error) {
+            log.error(error, 'Error handling message reaction');
+        }
+    });
+
+    client.on(Events.MessageReactionRemove, async (interaction, reactionUser) => {
+        log.info({ reactionUser: reactionUser.username }, 'Events.MessageReactionRemove');
+
+        try {
+            await messageReactRemoveHandler.execute(interaction, reactionUser);
+        } catch (error) {
+            log.error(error, 'Error handling message reaction');
         }
     });
 
@@ -31,13 +64,14 @@ export async function start() {
     scheduledMessageProcessor.start();
 }
 
-async function createGuildConnectionIfNeeded(interaction: Interaction) {
-    const guildConnection = await guildConnectionService.getByGuildId(interaction.guildId);
+type GuildConnectionInfo = { guildId: string; userId: string; connectionUserUsername: string };
+async function createGuildConnectionIfNeeded({ guildId, userId, connectionUserUsername }: GuildConnectionInfo) {
+    const guildConnection = await guildConnectionService.getByGuildId(guildId);
     if (!guildConnection) {
         return await guildConnectionService.createGuildConnection({
-            connectionUserId: interaction.user.id,
-            guildId: interaction.guildId,
-            username: interaction.user.username,
+            connectionUserId: userId,
+            guildId: guildId,
+            username: connectionUserUsername,
         });
     }
 
