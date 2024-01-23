@@ -56,13 +56,9 @@ async function copyAdminReactions(
 async function messageContainsUpEmoji(interaction: MessageReaction | PartialMessageReaction) {
     log.info(`Checking if message contains up emoji`);
 
-    const allReactions = await Promise.all(interaction.message.reactions.cache.map(reaction => reaction.users.fetch()));
-
     const allUpEmojiReactions = interaction.message.reactions.cache.filter(
         reaction => reaction.emoji.identifier === UP_EMOJI_IDENTIFIER
     );
-
-    log.info({ allReactions, cache: interaction.message.reactions.cache }, 'reactions cache');
 
     for (const adminUserId of config.adminUsers) {
         for (const upEmojiReaction of allUpEmojiReactions) {
