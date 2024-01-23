@@ -20,7 +20,7 @@ export class QueryService {
         const response = await fetch(url, { headers: { api: this.api } });
 
         if (!response.ok) {
-            log.error(`${ctx} error fetching response`, await response.text());
+            log.error({ responseText: await response.text() }, `${ctx} error fetching response`);
             return {
                 content: 'There was an error generating your response. Please try again later.',
                 ephemeral: true,

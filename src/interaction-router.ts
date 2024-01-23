@@ -31,7 +31,7 @@ export abstract class InteractionRouter {
             log.info(`${ctx} interaction handler found`);
             await interactionHandler.execute(interaction, guildConnectionId);
         } catch (error) {
-            log.error(`${ctx}`, error);
+            log.error(error, `${ctx}`);
             console.error(error);
             await this.handleError(interaction);
         }

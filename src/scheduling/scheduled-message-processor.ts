@@ -29,7 +29,7 @@ export class ScheduledMessageProcessor {
             try {
                 await this.processMessages();
             } catch (error) {
-                log.error(`error when processing schedule messages`, error);
+                log.error(error, `error when processing schedule messages`);
                 console.error(error);
             }
         });
@@ -47,7 +47,7 @@ export class ScheduledMessageProcessor {
                 await this.processMessage(message);
                 processedIds.push(message.id);
             } catch (error) {
-                log.error(`error sending message (${message.id})`, error);
+                log.error(error, `error sending message (${message.id})`);
                 await this.processFailedMessage(message);
             }
         }

@@ -1,0 +1,1 @@
+export const UP_EMOJI_IDENTIFIER = '%E2%98%9D%EF%B8%8F';

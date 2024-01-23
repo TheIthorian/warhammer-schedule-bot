@@ -1,4 +1,6 @@
 import { SelectOptionInteraction } from './select-option';
+import { MessageReactAddHandler } from './message-react-add';
+import { MessageReactRemoveHandler } from './message-react-remove';
 import { MessageComponentInteractionRouter } from './router';
 import { pollService } from '../services/poll.service';
 import { InteractionType } from 'discord.js';
@@ -18,3 +20,6 @@ export const messageComponentInteractionRouter = new MessageComponentInteraction
     interactionHandlers,
     new LinearSpamProtection(0.1)
 );
+
+export const messageReactAddHandler = new MessageReactAddHandler();
+export const messageReactRemoveHandler = new MessageReactRemoveHandler();

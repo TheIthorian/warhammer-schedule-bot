@@ -26,7 +26,7 @@ export class BookCommand implements Command {
         const response = this.reminderService.getDateAndResponseFromCommandInput(inputDateString);
 
         if (response.isSuccess === false) {
-            log.info(`${ctx} error parsing date`);
+            log.info({ inputDateString }, `${ctx} error parsing date`);
             await interaction.reply({ content: response.responseContent, ephemeral: true });
             return;
         }
