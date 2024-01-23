@@ -33,7 +33,7 @@ describe('ScheduleService', () => {
     });
 
     beforeEach(async () => {
-        await prisma.poll.deleteMany();
+        await prisma.poll.deleteMany({ where: { guildConnectionId: guildConnection.id } });
     });
 
     afterEach(() => {
@@ -148,7 +148,7 @@ describe('ScheduleService', () => {
         });
 
         afterEach(async () => {
-            await prisma.poll.deleteMany();
+            await prisma.poll.deleteMany({ where: { guildConnectionId: guildConnection.id } });
         });
 
         it('does not send a thread message when the channel is not text based', async () => {
@@ -206,7 +206,9 @@ describe('ScheduleService', () => {
                 guildConnectionId: guildConnection.id,
             });
 
-            expect(await prisma.pollAnswer.findMany()).toStrictEqual([
+            expect(
+                await prisma.pollAnswer.findMany({ where: { guildConnectionId: guildConnection.id } })
+            ).toStrictEqual([
                 {
                     answer: 'Monday,Tuesday',
                     answeredDate: expect.any(Date),
