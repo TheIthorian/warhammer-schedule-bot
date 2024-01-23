@@ -3,22 +3,25 @@ import { GuildConnectionService } from '../guild-connection.service';
 
 describe('GuildConnectionService', () => {
     const guildConnectionService = new GuildConnectionService();
+    const guildConnectionIds: number[] = [];
 
     beforeEach(async () => {
-        await prisma.guildConnection.deleteMany();
+        await prisma.guildConnection.deleteMany({ where: { id: { in: guildConnectionIds } } });
     });
 
     describe('createGuildConnection', () => {
         it('creates a guild connection successfully', async () => {
-            await guildConnectionService.createGuildConnection({
+            const guildId = 'guild123';
+            const gc = await guildConnectionService.createGuildConnection({
                 connectionUserId: 'user123',
-                guildId: 'guild123',
+                guildId: guildId,
                 username: 'testUser',
             });
+            guildConnectionIds.push(gc.id);
 
-            expect(await prisma.guildConnection.findFirstOrThrow()).toStrictEqual({
+            expect(await prisma.guildConnection.findUnique({ where: { guildId } })).toStrictEqual({
                 id: expect.any(Number),
-                guildId: 'guild123',
+                guildId: guildId,
                 connectionUserId: 'user123',
                 username: 'testUser',
                 email: '',
@@ -28,17 +31,19 @@ describe('GuildConnectionService', () => {
 
     describe('getByGuildId', () => {
         it('fetches a guild connection by guildId successfully', async () => {
-            await guildConnectionService.createGuildConnection({
+            const gc = await guildConnectionService.createGuildConnection({
                 connectionUserId: 'user:1',
                 guildId: 'guild:1',
                 username: 'testUser',
             });
+            guildConnectionIds.push(gc.id);
 
-            await guildConnectionService.createGuildConnection({
+            const gc2 = await guildConnectionService.createGuildConnection({
                 connectionUserId: 'user:1',
                 guildId: 'guild:2',
                 username: 'testUser',
             });
+            guildConnectionIds.push(gc2.id);
 
             const guildConnection = await guildConnectionService.getByGuildId('guild:1');
 

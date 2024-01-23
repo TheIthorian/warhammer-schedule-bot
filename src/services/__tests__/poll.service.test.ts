@@ -25,7 +25,7 @@ describe('PartyScheduler', () => {
     });
 
     beforeEach(async () => {
-        await prisma.poll.deleteMany();
+        await prisma.poll.deleteMany({ where: { guildConnectionId: guildConnection.id } });
     });
 
     afterAll(async () => {

@@ -60,6 +60,7 @@ model ScheduledMessage {
   scheduledDate     DateTime
   channelId         String
   status            String
+  retryCount        Int      @default(0)
 
   GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
 

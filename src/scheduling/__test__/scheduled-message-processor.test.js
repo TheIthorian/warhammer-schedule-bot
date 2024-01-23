@@ -21,7 +21,7 @@ describe('ScheduledMessageProcessor', () => {
     });
 
     beforeEach(async () => {
-        await prisma.scheduledMessage.deleteMany();
+        await prisma.scheduledMessage.deleteMany({ where: { guildConnectionId: guildConnection.id } });
         newMessageDetails = { guildConnectionId: guildConnection.id, scheduledDate: earlier, channelId };
 
         discordClientMock.channels.fetch.mockResolvedValue(mockChannel);
@@ -83,9 +83,7 @@ describe('ScheduledMessageProcessor', () => {
             const message2 = await createScheduledMessage(newMessageDetails);
 
             mockChannel.isTextBased.mockReturnValue(true);
-            mockChannel.send
-                .mockResolvedValueOnce(undefined)
-                .mockRejectedValueOnce(new Error('unable to send message'));
+            mockChannel.send.mockResolvedValueOnce(undefined).mockRejectedValue(new Error('unable to send message'));
 
             // When
             await scheduledMessageProcessor.processMessages();
@@ -93,7 +91,19 @@ describe('ScheduledMessageProcessor', () => {
             // Then
             expect(mockChannel.send).toHaveBeenCalledTimes(2);
             await assertStatus([message1.id], 'processed');
-            await assertStatus([message2.id], 'failed');
+            await assertStatus([message2.id], 'retry', 1);
+
+            await scheduledMessageProcessor.processMessages();
+            await assertStatus([message2.id], 'retry', 2);
+            expect(mockChannel.send).toHaveBeenCalledTimes(3);
+
+            await scheduledMessageProcessor.processMessages();
+            await assertStatus([message2.id], 'retry', 3);
+            expect(mockChannel.send).toHaveBeenCalledTimes(4);
+
+            await scheduledMessageProcessor.processMessages();
+            await assertStatus([message2.id], 'failed', 3);
+            expect(mockChannel.send).toHaveBeenCalledTimes(5);
         });
 
         it('should not process future messages', async () => {
@@ -135,10 +145,11 @@ describe('ScheduledMessageProcessor', () => {
         });
     }
 
-    async function assertStatus(ids, status) {
+    async function assertStatus(ids, status, retryCount = 0) {
         for (const id of ids) {
             const message = await prisma.scheduledMessage.findFirst({ where: { id } });
             expect(message.status).toBe(status);
+            expect(message.retryCount).toBe(retryCount);
         }
     }
 });
