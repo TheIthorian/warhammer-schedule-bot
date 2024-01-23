@@ -21,7 +21,7 @@ describe('ScheduledMessageProcessor', () => {
     });
 
     beforeEach(async () => {
-        await prisma.scheduledMessage.deleteMany();
+        await prisma.scheduledMessage.deleteMany({ where: { guildConnectionId: guildConnection.id } });
         newMessageDetails = { guildConnectionId: guildConnection.id, scheduledDate: earlier, channelId };
 
         discordClientMock.channels.fetch.mockResolvedValue(mockChannel);

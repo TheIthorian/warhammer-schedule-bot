@@ -11,16 +11,17 @@ describe('GuildConnectionService', () => {
 
     describe('createGuildConnection', () => {
         it('creates a guild connection successfully', async () => {
+            const guildId = 'guild123';
             const gc = await guildConnectionService.createGuildConnection({
                 connectionUserId: 'user123',
-                guildId: 'guild123',
+                guildId: guildId,
                 username: 'testUser',
             });
             guildConnectionIds.push(gc.id);
 
-            expect(await prisma.guildConnection.findFirstOrThrow()).toStrictEqual({
+            expect(await prisma.guildConnection.findUnique({ where: { guildId } })).toStrictEqual({
                 id: expect.any(Number),
-                guildId: 'guild123',
+                guildId: guildId,
                 connectionUserId: 'user123',
                 username: 'testUser',
                 email: '',
