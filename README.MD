@@ -19,6 +19,8 @@ AI_SERVICE_API_KEY= # Application key for the ai service
 
 DATABASE_URL="file:./dev.db" # Database to store persistent data
 TEST_DATABASE_URL="file:./dev.test.db" # Test database swapped out during tests
+
+ADMIN_USERS='' # Comma delimited list of users who are admins. Have increased permissions.
 ```
 
 ## Running
