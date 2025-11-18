@@ -22,6 +22,8 @@ export const config = {
 
     isLocal: nodeEnv === 'local',
 
+    dbUrl: assertResource(process.env.DATABASE_URL),
+
     aiService: {
         url: process.env.AI_SERVICE_URL,
         apiKey: process.env.AI_SERVICE_API_KEY,

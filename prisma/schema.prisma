@@ -2,67 +2,67 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model GuildConnection {
-  id      Int    @id @default(autoincrement())
-  guildId String @unique
+    id      Int    @id @default(autoincrement())
+    guildId String @unique
 
-  connectionUserId String
-  username         String
-  email            String
+    connectionUserId String
+    username         String
+    email            String
 
-  polls             Poll[]
-  scheduledMessages ScheduledMessage[]
+    polls             Poll[]
+    scheduledMessages ScheduledMessage[]
 
-  @@index([guildId])
-  @@index([connectionUserId])
+    @@index([guildId])
+    @@index([connectionUserId])
 }
 
 model Poll {
-  id                Int @id @default(autoincrement())
-  guildConnectionId Int
+    id                Int @id @default(autoincrement())
+    guildConnectionId Int
 
-  userId     String
-  messageId  String
-  messageUrl String
-  channelId  String
-  status     String
+    userId     String
+    messageId  String
+    messageUrl String
+    channelId  String
+    status     String
 
-  PollAnswers     PollAnswer[]
-  GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
+    PollAnswers     PollAnswer[]
+    GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
 }
 
 model PollAnswer {
-  pollId            Int
-  guildConnectionId Int
+    pollId            Int
+    guildConnectionId Int
 
-  userId       String
-  username     String?
-  answer       String
-  answeredDate DateTime
+    userId       String
+    username     String?
+    answer       String
+    answeredDate DateTime
 
-  Poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+    Poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
 
-  @@unique([pollId, userId])
+    @@unique([pollId, userId])
 }
 
 model ScheduledMessage {
-  id                Int      @id @default(autoincrement())
-  guildConnectionId Int
-  messageContent    String
-  scheduledDate     DateTime
-  channelId         String
-  status            String
-  retryCount        Int      @default(0)
+    id                Int      @id @default(autoincrement())
+    guildConnectionId Int
+    messageContent    String
+    scheduledDate     DateTime
+    channelId         String
+    status            String
+    retryCount        Int      @default(0)
 
-  GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
+    GuildConnection GuildConnection @relation(fields: [guildConnectionId], references: [id], onDelete: Cascade)
 
-  @@index([messageContent, status])
+    @@index([messageContent, status])
 }
