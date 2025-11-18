@@ -10,10 +10,20 @@ import { makeLogger } from './util/logger';
 import { ScheduledMessageProcessor } from './scheduling';
 import { client } from './discord-client';
 import { guildConnectionService } from './services/guild-connection.service';
+import http from 'http';
 
 const log = makeLogger(module);
 
 export async function start() {
+    const port = process.env.HEALTH_PORT || 8080;
+    http.createServer((req, res) => {
+        log.debug('received health request');
+        res.writeHead(200);
+        res.end('ok');
+    }).listen(port);
+
+    log.info(`health check running on port: ${port}`);
+
     client.on(Events.ClientReady, () => {
         const clientUser = client.user;
         log.info({ userId: clientUser.id }, `Client Ready - logged in as ${clientUser.tag}!`);

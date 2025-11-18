@@ -1,7 +1,6 @@
-# Use Node.js 20 Alpine for smaller image size
-FROM node:20-alpine
-
+FROM node:20-slim
 WORKDIR /app
+EXPOSE 8080
 
 # Copy package files
 COPY package*.json ./
@@ -9,7 +8,8 @@ COPY prisma ./prisma/
 
 # Install all dependencies (including dev dependencies for ts-node and typescript)
 # Note: ts-node and typescript are needed at runtime since we're running TypeScript directly
-RUN npm ci
+# Install with dev dependencies since typescript is needed for ts-node
+RUN npm ci --include=dev
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -22,7 +22,14 @@ COPY src ./src/
 # Copy assets if needed
 COPY assets ./assets
 
-# Set environment to production
+COPY healthcheck.sh /app/healthcheck.sh
+RUN chmod +x /app/healthcheck.sh
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+    CMD /app/healthcheck.sh || exit 1
+
+
+# Set environment to production (after installing dependencies)
 ENV NODE_ENV=production
 
 # Run the application using ts-node (matching the start script behavior)
@@ -30,4 +37,4 @@ ENV NODE_ENV=production
 # 1. Add a proper build script to package.json
 # 2. Build in a separate stage
 # 3. Use "node build/index.js" instead
-CMD ["ts-node", "index.js"]
+CMD ["node_modules/.bin/ts-node", "index.js"]
