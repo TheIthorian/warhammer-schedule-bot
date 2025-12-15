@@ -24,7 +24,7 @@ export class ScheduledMessageProcessor {
      * Activates the message processing
      */
     public start() {
-        schedule.scheduleJob('*/5 * * * *', async () => {
+        schedule.scheduleJob('5,35 * * * *', async () => {
             log.info('processing scheduled message');
             try {
                 await this.processMessages();
