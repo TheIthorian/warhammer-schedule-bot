@@ -38,6 +38,13 @@ First, the commands need to be uploaded to discord
 npm run deploy-commands
 ```
 
+Deploy to digital ocean
+
+```sh
+docker build . -t theithorian/gm-sidekick:latest
+docker push theithorian/gm-sidekick:latest
+```
+
 ## Commands
 
 | command          | description                                                                                   |
