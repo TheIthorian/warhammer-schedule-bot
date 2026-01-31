@@ -7,7 +7,7 @@ services:
     # Local PostgreSQL database - comment out this service if using remote Neon database
     db:
         container_name: gm-sidekick-db
-        image: postgres:latest
+        image: postgres:17
         restart: unless-stopped
         volumes:
             - postgres-data:/var/lib/postgresql/data

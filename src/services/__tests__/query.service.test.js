@@ -21,8 +21,15 @@ describe('QueryService', () => {
 
         const result = await queryService.runQuery(queryInput);
 
-        expect(fetch).toHaveBeenCalledWith(`${apiUrl}/query/${queryInput}`, {
-            headers: { api: apiKey },
+        expect(fetch).toHaveBeenCalledWith(apiUrl, {
+            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            method: 'POST',
+            body: JSON.stringify({
+                query: queryInput,
+                rerank: true,
+                filter: { scope: 'prod' },
+                msg: '',
+            }),
         });
 
         expect(result).toEqual({
@@ -42,8 +49,15 @@ describe('QueryService', () => {
 
         const result = await queryService.runQuery(queryInput);
 
-        expect(fetch).toHaveBeenCalledWith(`${apiUrl}/query/${queryInput}`, {
-            headers: { api: apiKey },
+        expect(fetch).toHaveBeenCalledWith(apiUrl, {
+            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            method: 'POST',
+            body: JSON.stringify({
+                query: queryInput,
+                rerank: true,
+                filter: { scope: 'prod' },
+                msg: '',
+            }),
         });
 
         expect(result).toEqual({

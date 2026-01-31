@@ -24,7 +24,7 @@ export class QueryCommand implements Command {
         logContext(`${QueryCommand.name}.${this.execute.name}`, getInteractionLogDetails(interaction), log);
 
         const questionInput = interaction.options.get('input').value?.toString();
-        const isSecret = interaction.options.get('secret').value || false;
+        const isSecret = interaction.options.get('secret')?.value || false;
 
         await interaction.deferReply({ ephemeral: !!isSecret });
 
