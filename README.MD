@@ -65,10 +65,4 @@ Usa AI to search pdf https://github.com/imartinez/privateGPT
 
 ## Project
 
-logs: https://console.cloud.google.com/logs/query;storageScope=storage,projects%2Fgm-sidekick-discord-bot%2Flocations%2Fglobal%2Fbuckets%2F_Default%2Fviews%2F_AllLogs,projects%2Fgm-sidekick-discord-bot%2Flocations%2Fglobal%2Fbuckets%2F_Default%2Fviews%2F_Default;cursorTimestamp=2023-11-20T19:36:44.753906Z;duration=P7D?serviceId=default&versionId=20231120t191852&project=gm-sidekick-discord-bot
-
-builds: https://console.cloud.google.com/cloud-build/builds;region=europe-west2?project=gm-sidekick-discord-bot
-
-billing: https://console.cloud.google.com/billing/014C3A-E32E31-15BC93?organizationId=0&project=summer-nucleus-396817
-
-app engine: https://console.cloud.google.com/appengine?serviceId=default&project=gm-sidekick-discord-bot
+app: https://cloud.digitalocean.com/apps/a3b323de-7f34-4e2a-b131-59946c59e2f2/settings?i=244b97
