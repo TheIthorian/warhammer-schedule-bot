@@ -7,7 +7,7 @@ export class QueryService {
     constructor(private readonly url: string, private readonly api: string) {}
 
     async runQuery(query?: string): Promise<{ content: string; ephemeral: boolean }> {
-        const ctx = logContext(`${QueryService.name}.${this.runQuery.name}`, { query });
+        const ctx = logContext(`${QueryService.name}.${this.runQuery.name}`, { query, url: this.url });
 
         if (!query) {
             log.info(`${ctx} No input provided`);
@@ -34,6 +34,7 @@ export class QueryService {
         }
 
         const queryResponse: { generation: string } = await response.json();
+        log.debug(`${ctx} received response of length: ${queryResponse.generation.length}`);
         return { content: this.formatQueryResponse(query, queryResponse.generation), ephemeral: false };
     }
 
