@@ -38,12 +38,14 @@ First, the commands need to be uploaded to discord
 npm run deploy-commands
 ```
 
-Deploy to digital ocean
+Deploy to digital ocean (this will be done automatically on push to `master`)
 
 ```sh
 docker build . -t theithorian/gm-sidekick:latest
 docker push theithorian/gm-sidekick:latest
 ```
+
+Go to https://cloud.digitalocean.com/apps/a3b323de-7f34-4e2a-b131-59946c59e2f2?i=244b97 and deploy latest image
 
 ## Commands
 
