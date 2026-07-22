@@ -10,16 +10,16 @@ vulnerabilities, and bring the repo's tooling in line with the standards used in
 
 ## Current State
 
-| Area          | Today                                                                    |
-| ------------- | ------------------------------------------------------------------------ |
-| Hosting       | DigitalOcean App Platform, deploying `theithorian/gm-sidekick:latest`    |
-| CI            | `.github/workflows/deploy.yml` builds + pushes to Docker Hub on `master` |
+| Area          | Today                                                                         |
+| ------------- | ----------------------------------------------------------------------------- |
+| Hosting       | DigitalOcean App Platform, deploying `theithorian/gm-sidekick:latest`         |
+| CI            | `.github/workflows/deploy.yml` builds + pushes to Docker Hub on `master`      |
 | Database      | **Nominally** Postgres via Prisma 6.19 — in practice still SQLite (see below) |
-| Prod runtime  | `ts-node index.js` with full `devDependencies` installed in the image    |
-| Package mgr   | npm                                                                      |
-| Tests         | jest + ts-jest + babel-jest, tests in `__test__` / `__tests__` dirs      |
-| Lint / format | eslint (`next/core-web-vitals`) + prettier                               |
-| Vulns         | 25 advisories (17 high), nearly all via `discord.js` → `undici` / `ws`   |
+| Prod runtime  | `ts-node index.js` with full `devDependencies` installed in the image         |
+| Package mgr   | npm                                                                           |
+| Tests         | jest + ts-jest + babel-jest, tests in `__test__` / `__tests__` dirs           |
+| Lint / format | eslint (`next/core-web-vitals`) + prettier                                    |
+| Vulns         | 25 advisories (17 high), nearly all via `discord.js` → `undici` / `ws`        |
 
 Dead weight found in `package.json`:
 

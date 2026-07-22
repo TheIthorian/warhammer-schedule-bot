@@ -597,7 +597,7 @@ if (!process.env['DATABASE_URL']) {
 - [ ] **Step 5: Create `.env.test`**
 
 ```
-DATABASE_URL="postgresql://root:password@localhost:5432/gm_sidekick?schema=public"
+DATABASE_URL="postgresql://root:password@localhost:55432/gm_sidekick?schema=public"
 NODE_ENV=test
 ```
 
@@ -678,7 +678,7 @@ If `.data/postgres` does not exist yet, that is fine — Task 8 introduces the b
 - [ ] **Step 4: Generate the squashed migration**
 
 ```bash
-DATABASE_URL="postgresql://root:password@localhost:5432/gm_sidekick?schema=public" \
+DATABASE_URL="postgresql://root:password@localhost:55432/gm_sidekick?schema=public" \
   pnpm exec prisma migrate dev --name init
 ```
 
@@ -697,7 +697,7 @@ Expected: no matches, `exit=1`.
 ```bash
 docker compose down db && rm -rf .data/postgres && docker compose up -d db
 sleep 5
-DATABASE_URL="postgresql://root:password@localhost:5432/gm_sidekick?schema=public" \
+DATABASE_URL="postgresql://root:password@localhost:55432/gm_sidekick?schema=public" \
   pnpm exec prisma migrate deploy
 ```
 
@@ -725,10 +725,12 @@ data is ephemeral, so the history is rebuilt from the current schema."
 ## Task 6a: Port `poll.service.ts` off SQLite-only raw SQL
 
 **Files:**
+
 - Modify: `src/services/poll.service.ts`, and any caller whose expectations change
 - Test: `src/services/__tests__/poll.service.test.ts` and the other suites currently failing
 
 **Interfaces:**
+
 - Consumes: the working migration history from Task 6
 - Produces: a green test suite — the gate every later task's verification assumes
 
@@ -980,7 +982,7 @@ services:
         volumes:
             - ./.data/postgres:/var/lib/postgresql/data
         ports:
-            - 5432:5432
+            - 55432:5432
         networks:
             - haagen-net
         environment:
@@ -1008,7 +1010,9 @@ services:
             - .docker.env
 ```
 
-Three things changed beyond the bind mount: the named `postgres-data` volume and the top-level `volumes:` block are gone; `POSTGRES_DB` is now `gm_sidekick` rather than `postgres`, matching the `DATABASE_URL` used in tests and scripts; and `depends_on` uses a healthcheck condition so the app does not start before Postgres accepts connections.
+Four things changed beyond the bind mount: the named `postgres-data` volume and the top-level `volumes:` block are gone; `POSTGRES_DB` is now `gm_sidekick` rather than `postgres`, matching the `DATABASE_URL` used in tests and scripts; `depends_on` uses a healthcheck condition so the app does not start before Postgres accepts connections; and the host port is **55432**, not 5432.
+
+The port matters: on this machine 5432 is already bound by an unrelated project's container (`picstack-pg-db`), so `5432:5432` fails to bind. 55432 is what Task 5 already configured in the gitignored `.env.test`. Every `DATABASE_URL` that connects from the **host** must use 55432; connections from inside the compose network still use `db:5432`.
 
 The `./init` mount is dropped — the directory does not exist in the repo, and Prisma migrations handle schema creation.
 
@@ -1034,7 +1038,7 @@ CLIENT_SECRET=
 AI_SERVICE_URL=
 AI_SERVICE_API_KEY=
 
-DATABASE_URL="postgresql://root:password@localhost:5432/gm_sidekick?schema=public"
+DATABASE_URL="postgresql://root:password@localhost:55432/gm_sidekick?schema=public"
 
 ADMIN_USERS=''
 ```
@@ -1347,7 +1351,7 @@ Correct the `DATABASE_URL` line and delete the `TEST_DATABASE_URL` line:
 
 ```
 
-DATABASE_URL="postgresql://root:password@localhost:5432/gm_sidekick?schema=public" # Postgres connection string
+DATABASE_URL="postgresql://root:password@localhost:55432/gm_sidekick?schema=public" # Postgres connection string
 
 ````
 
