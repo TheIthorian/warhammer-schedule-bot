@@ -9,7 +9,10 @@ const log = makeLogger(module);
 export class CommandInteractionRouter extends InteractionRouter {
     private readonly commandsByName = new Collection<string, Command>();
 
-    constructor(private readonly commands: Array<Command>, spamProtection: SpamProtection) {
+    constructor(
+        private readonly commands: Array<Command>,
+        spamProtection: SpamProtection,
+    ) {
         super(spamProtection);
 
         for (const command of this.commands) {
@@ -23,7 +26,7 @@ export class CommandInteractionRouter extends InteractionRouter {
     }
 
     protected override getHandler(
-        interaction: Interaction
+        interaction: Interaction,
     ): { execute: (interaction: Interaction, guildConnectionId: number) => Promise<void> } | undefined {
         if (!interaction.isCommand()) {
             log.error('Interaction is not a command type');

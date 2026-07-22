@@ -74,7 +74,7 @@ describe('ScheduleService', () => {
             const message = scheduleService.getSchedulingMessageComponents();
 
             expect(message.content).toStrictEqual(
-                'Hey everyone 👋 Please select the days that you are available next week'
+                'Hey everyone 👋 Please select the days that you are available next week',
             );
 
             expect(message.components[0].toJSON()).toMatchSnapshot();
@@ -207,7 +207,7 @@ describe('ScheduleService', () => {
             });
 
             expect(
-                await prisma.pollAnswer.findMany({ where: { guildConnectionId: guildConnection.id } })
+                await prisma.pollAnswer.findMany({ where: { guildConnectionId: guildConnection.id } }),
             ).toStrictEqual([
                 {
                     answer: 'Monday,Tuesday',

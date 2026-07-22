@@ -30,7 +30,7 @@ export async function start() {
         config.discordBotUserId = clientUser.id;
     });
 
-    client.on(Events.InteractionCreate, async interaction => {
+    client.on(Events.InteractionCreate, async (interaction) => {
         log.info('Events.InteractionCreate');
 
         try {

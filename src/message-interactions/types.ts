@@ -3,6 +3,6 @@ import { AnySelectMenuInteraction, ButtonInteraction, CacheType } from 'discord.
 export interface MessageComponentInteractionHandler {
     execute(
         interaction: AnySelectMenuInteraction<CacheType> | ButtonInteraction<CacheType>,
-        guildConnectionId: number
+        guildConnectionId: number,
     ): Promise<void>;
 }

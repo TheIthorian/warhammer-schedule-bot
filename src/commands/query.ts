@@ -13,10 +13,10 @@ export class QueryCommand implements Command {
         this.data = new SlashCommandBuilder()
             .setName('query')
             .setDescription('Answers your questions!')
-            .addStringOption(option =>
-                option.setName('input').setDescription('Your question to the AI').setRequired(true)
+            .addStringOption((option) =>
+                option.setName('input').setDescription('Your question to the AI').setRequired(true),
             )
-            .addBooleanOption(option => option.setName('secret').setDescription('Only you will see the response'))
+            .addBooleanOption((option) => option.setName('secret').setDescription('Only you will see the response'))
             .setName('query');
     }
 

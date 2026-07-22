@@ -42,7 +42,7 @@ describe('LinearSpamProtection', () => {
             };
             expect(result.ok).toBe(false);
             expect(result.message).toContain(
-                'Please wait, you are on a cooldown for `commandA`. You can use it again <t:'
+                'Please wait, you are on a cooldown for `commandA`. You can use it again <t:',
             );
         });
 

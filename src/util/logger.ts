@@ -42,7 +42,7 @@ export function makeLogger(module: Module | undefined, level = DEFAULT_LEVEL): L
 export function logContext(
     functionName: string,
     dataObject: Record<string, string | null | number | Date | undefined> = {},
-    log?: Logger
+    log?: Logger,
 ) {
     const objectString = Object.entries(dataObject)
         .map(([key, value]) => `[${key} : ${value?.toString()}]`)

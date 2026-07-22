@@ -13,7 +13,7 @@ export class RollCommand implements Command {
         this.data = new SlashCommandBuilder()
             .setName('roll')
             .setDescription('Roll a dice')
-            .addStringOption(option => option.setName('dice').setDescription('Dice to roll E.g. 2d10'))
+            .addStringOption((option) => option.setName('dice').setDescription('Dice to roll E.g. 2d10'))
             .setName('roll');
     }
 

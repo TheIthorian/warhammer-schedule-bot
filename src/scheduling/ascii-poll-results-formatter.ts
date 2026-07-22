@@ -11,7 +11,7 @@ export class AsciiPollResultsFormatter implements PollResultsFormatter {
         const results = this.getResults(responses);
 
         const totalNumberOfResponses = responses.size;
-        const formattedResultsArray = results.map(result => {
+        const formattedResultsArray = results.map((result) => {
             const fractionOfMax = (GRAPHIC_WIDTH * result.userIds.length) / totalNumberOfResponses;
             const recordString = `(${result.userIds.length})\t${padString(result.day, lengthOfLongestDayName)}\t`;
             const barString = '|' + padString(padString('', fractionOfMax, '█'), GRAPHIC_WIDTH) + '|';

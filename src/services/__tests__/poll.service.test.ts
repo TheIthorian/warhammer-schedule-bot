@@ -221,7 +221,7 @@ describe('PartyScheduler', () => {
                     channelId,
                     userId: userId1,
                     guildConnectionId: guildConnection.id,
-                })
+                }),
             ).rejects.toThrow('A poll is already in progress');
         });
     });

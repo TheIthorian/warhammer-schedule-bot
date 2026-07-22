@@ -28,6 +28,7 @@
 ## File Structure
 
 **Created:**
+
 - `.npmrc` — pnpm settings
 - `.nvmrc` — Node version pin
 - `oxlint.json` — lint rules
@@ -39,6 +40,7 @@
 - `prisma/migrations/<timestamp>_init/migration.sql` — single squashed Postgres migration
 
 **Modified:**
+
 - `package.json` — deps, scripts, engines
 - `tsconfig.json` — strict config
 - `Dockerfile` — multi-stage
@@ -48,6 +50,7 @@
 - `src/app.ts` and 8 other source files — strict-mode fixes
 
 **Deleted:**
+
 - `.github/workflows/deploy.yml`, `app.yaml`, `app.prod.yaml.example`, `.gcloudignore`, `healthcheck.sh`
 - `.babelrc`, `jest.config.ts`, `.eslintrc.json`, `prettier.config.cjs`, `.prettierignore`
 - `package-lock.json`, `prisma/dev.db`, `.DS_Store`
@@ -58,11 +61,13 @@
 ## Task 1: Switch to pnpm
 
 **Files:**
+
 - Create: `.npmrc`, `.nvmrc`
 - Modify: `package.json`, `.gitignore`
 - Delete: `package-lock.json`, `.DS_Store`
 
 **Interfaces:**
+
 - Consumes: nothing (first task)
 - Produces: a working `pnpm install`; every later task uses `pnpm` rather than `npm`
 
@@ -130,10 +135,12 @@ package-lock.json with pnpm-lock.yaml."
 ## Task 2: Clear dependency vulnerabilities and remove dead packages
 
 **Files:**
+
 - Modify: `package.json`
 - Delete: `.babelrc`
 
 **Interfaces:**
+
 - Consumes: pnpm from Task 1
 - Produces: a clean dependency tree. `pnpm audit` reports zero vulnerabilities. `node_modules/.bin/tsc` is the real TypeScript compiler.
 
@@ -191,11 +198,11 @@ pnpm 11 requires explicit approval for packages with install scripts, or `pnpm i
 
 ```yaml
 allowBuilds:
-  '@prisma/client': true
-  '@prisma/engines': true
-  esbuild: true
-  prisma: true
-  unrs-resolver: true
+    '@prisma/client': true
+    '@prisma/engines': true
+    esbuild: true
+    prisma: true
+    unrs-resolver: true
 ```
 
 This file exists from Task 2 onward — later tasks should not be surprised by it.
@@ -234,11 +241,13 @@ and two stub @types packages. Replaces ts-node with tsx."
 ## Task 3: Replace eslint and prettier with oxlint and oxfmt
 
 **Files:**
+
 - Create: `oxlint.json`, `.oxfmtrc.json`
 - Modify: `package.json` (scripts)
 - Delete: `.eslintrc.json`, `prettier.config.cjs`, `.prettierignore`
 
 **Interfaces:**
+
 - Consumes: oxlint and oxfmt from Task 2
 - Produces: `pnpm lint` and `pnpm format` scripts used by every later task's verification
 
@@ -322,9 +331,11 @@ project."
 ## Task 4: Enable strict TypeScript and fix the resulting errors
 
 **Files:**
+
 - Modify: `tsconfig.json`, `src/app.ts`, `src/commands/book.ts`, `src/commands/query.ts`, `src/commands/roll.ts`, `src/commands/router.ts`, `src/message-interactions/router.ts`, `src/message-interactions/select-option.ts`, `src/scheduling/ascii-poll-results-formatter.ts`, `src/scheduling/schedule-service.ts`, `src/scheduling/scheduled-message-processor.ts`
 
 **Interfaces:**
+
 - Consumes: the real `tsc` from Task 2
 - Produces: `pnpm exec tsc --noEmit` exits clean, which Task 5's build depends on
 
@@ -375,11 +386,11 @@ import { Events } from 'discord.js';
 Change the health server callback to drop the unused `req` parameter:
 
 ```ts
-    http.createServer((_req, res) => {
-        log.debug('received health request');
-        res.writeHead(200);
-        res.end('ok');
-    }).listen(port);
+http.createServer((_req, res) => {
+    log.debug('received health request');
+    res.writeHead(200);
+    res.end('ok');
+}).listen(port);
 ```
 
 - [ ] **Step 4: Fix the nullable `clientUser` in `src/app.ts`**
@@ -387,17 +398,17 @@ Change the health server callback to drop the unused `req` parameter:
 `client.user` is `User | null` — it is only non-null after the ready event, but the compiler cannot know that. Guard it explicitly rather than asserting:
 
 ```ts
-    client.on(Events.ClientReady, () => {
-        const clientUser = client.user;
+client.on(Events.ClientReady, () => {
+    const clientUser = client.user;
 
-        if (!clientUser) {
-            log.error('ClientReady fired without a client user');
-            return;
-        }
+    if (!clientUser) {
+        log.error('ClientReady fired without a client user');
+        return;
+    }
 
-        log.info({ userId: clientUser.id }, `Client Ready - logged in as ${clientUser.tag}!`);
-        config.discordBotUserId = clientUser.id;
-    });
+    log.info({ userId: clientUser.id }, `Client Ready - logged in as ${clientUser.tag}!`);
+    config.discordBotUserId = clientUser.id;
+});
 ```
 
 - [ ] **Step 5: Fix the nullable `guildId` in `src/app.ts`**
@@ -436,31 +447,31 @@ Each of these follows the same shape — a Discord.js accessor returns `T | null
 
 The sites, from the compiler output:
 
-| File | Line | Value | Why it can be null |
-| --- | --- | --- | --- |
-| `src/commands/book.ts` | 26 | `interaction.guildId` | DM interaction |
-| `src/commands/query.ts` | 26 | option accessor | option absent |
-| `src/commands/roll.ts` | 24 | option accessor | option absent |
-| `src/message-interactions/select-option.ts` | 66 | `interaction.guild` | DM interaction |
-| `src/scheduling/schedule-service.ts` | 55, 76 | `channel` | channel deleted or uncached |
-| `src/scheduling/schedule-service.ts` | 91 | `thread` | thread creation returned nothing |
-| `src/scheduling/scheduled-message-processor.ts` | 71 | `channel` | channel deleted or uncached |
+| File                                            | Line   | Value                 | Why it can be null               |
+| ----------------------------------------------- | ------ | --------------------- | -------------------------------- |
+| `src/commands/book.ts`                          | 26     | `interaction.guildId` | DM interaction                   |
+| `src/commands/query.ts`                         | 26     | option accessor       | option absent                    |
+| `src/commands/roll.ts`                          | 24     | option accessor       | option absent                    |
+| `src/message-interactions/select-option.ts`     | 66     | `interaction.guild`   | DM interaction                   |
+| `src/scheduling/schedule-service.ts`            | 55, 76 | `channel`             | channel deleted or uncached      |
+| `src/scheduling/schedule-service.ts`            | 91     | `thread`              | thread creation returned nothing |
+| `src/scheduling/scheduled-message-processor.ts` | 71     | `channel`             | channel deleted or uncached      |
 
 Pattern to apply at each channel site:
 
 ```ts
-        const channel = await client.channels.fetch(channelId);
+const channel = await client.channels.fetch(channelId);
 
-        if (!channel || !channel.isTextBased()) {
-            log.error({ channelId }, 'Channel not found or is not text based');
-            return;
-        }
+if (!channel || !channel.isTextBased()) {
+    log.error({ channelId }, 'Channel not found or is not text based');
+    return;
+}
 ```
 
 For the command option sites, supply the documented default rather than returning — these are optional command options:
 
 ```ts
-        const diceInput = interaction.options.getString('dice') ?? undefined;
+const diceInput = interaction.options.getString('dice') ?? undefined;
 ```
 
 - [ ] **Step 8: Fix the index-signature error in `src/scheduling/ascii-poll-results-formatter.ts`**
@@ -517,11 +528,13 @@ correct genuine variance unsoundness in the handler base classes."
 ## Task 5: Migrate jest to vitest
 
 **Files:**
+
 - Create: `vitest.config.ts`
 - Modify: `package.json` (already done in Task 3), test files as needed
 - Delete: `jest.config.ts`
 
 **Interfaces:**
+
 - Consumes: vitest from Task 2, strict types from Task 4
 - Produces: `pnpm test` runs the suite; used as the gate in every later task
 
@@ -597,7 +610,7 @@ Fix each failure. Do not use `--update` on snapshots yet.
 
 Once the non-snapshot failures are fixed, run: `pnpm test -u`
 Then run: `git diff -- '*.snap'`
-Expected: only serialisation-format differences. If any snapshot's *content* changed — different dates, different poll results, different text — that is a real regression from the discord.js or strict-mode changes. Investigate before accepting.
+Expected: only serialisation-format differences. If any snapshot's _content_ changed — different dates, different poll results, different text — that is a real regression from the discord.js or strict-mode changes. Investigate before accepting.
 
 - [ ] **Step 8: Confirm a green suite**
 
@@ -620,11 +633,13 @@ in a single fork because they share one Postgres instance."
 ## Task 6: Reset the Prisma migration history
 
 **Files:**
+
 - Create: `prisma/migrations/<timestamp>_init/migration.sql` (generated)
 - Modify: `prisma/migrations/migration_lock.toml` (regenerated)
 - Delete: `prisma/migrations/20231126101500_init/`, `prisma/migrations/20231128194432_init/`, `prisma/migrations/20231219220142_init/`, `prisma/migrations/20260131154044_init/`, `prisma/dev.db`
 
 **Interfaces:**
+
 - Consumes: a running Postgres from Task 5
 - Produces: a migration history that `prisma migrate deploy` can apply to an empty database — required by Task 7's container start command
 
@@ -702,11 +717,13 @@ data is ephemeral, so the history is rebuilt from the current schema."
 ## Task 7: Multi-stage Dockerfile
 
 **Files:**
+
 - Modify: `Dockerfile`, `.dockerignore`
 - Create: `tsconfig.build.json` (replacing the existing stub)
 - Delete: `healthcheck.sh`
 
 **Interfaces:**
+
 - Consumes: the `build` script from Task 3, the migration from Task 6
 - Produces: an image whose entrypoint runs `prisma migrate deploy && node dist/index.js`; Task 9 deploys it
 
@@ -846,9 +863,11 @@ user. Migrations now apply at container start."
 ## Task 8: Local development with bind mounts
 
 **Files:**
+
 - Modify: `docker-compose.yml`, `.gitignore`, `.docker.env.example`, `.env.example`
 
 **Interfaces:**
+
 - Consumes: the image from Task 7
 - Produces: `docker compose up` runs the full stack locally
 
@@ -982,11 +1001,13 @@ POSTGRES_DB to match the DATABASE_URL used by tests."
 ## Task 9: Railway configuration and DigitalOcean teardown
 
 **Files:**
+
 - Create: `railway.json`
 - Modify: `src/app.ts`
 - Delete: `.github/workflows/deploy.yml`, `app.yaml`, `app.prod.yaml.example`, `.gcloudignore`
 
 **Interfaces:**
+
 - Consumes: the working image from Task 7
 - Produces: a deployed bot
 
@@ -997,7 +1018,7 @@ POSTGRES_DB to match the DATABASE_URL used by tests."
 In `src/app.ts`, change the port line. Railway injects `PORT` and routes traffic to it:
 
 ```ts
-    const port = process.env['PORT'] ?? process.env['HEALTH_PORT'] ?? 8080;
+const port = process.env['PORT'] ?? process.env['HEALTH_PORT'] ?? 8080;
 ```
 
 - [ ] **Step 2: Create `railway.json`**
@@ -1029,15 +1050,15 @@ rm -f .github/workflows/deploy.yml app.yaml app.prod.yaml.example .gcloudignore
 
 If `.github/workflows/` is now empty, remove the directory too.
 
-- [ ] **Step 4: Create the Railway project** *(user action)*
+- [ ] **Step 4: Create the Railway project** _(user action)_
 
 In the Railway dashboard: create a project, then **New → GitHub Repo → `TheIthorian/warhammer-schedule-bot`**, tracking `master`. Railway detects `railway.json` and uses the Dockerfile builder.
 
-- [ ] **Step 5: Add the Postgres plugin** *(user action)*
+- [ ] **Step 5: Add the Postgres plugin** _(user action)_
 
 **New → Database → PostgreSQL** in the same project.
 
-- [ ] **Step 6: Wire the database URL** *(user action)*
+- [ ] **Step 6: Wire the database URL** _(user action)_
 
 On the app service, add a variable:
 
@@ -1047,7 +1068,7 @@ DATABASE_URL=${{Postgres.DATABASE_URL}}
 
 The reference-variable syntax keeps traffic on Railway's private network rather than routing over the public internet.
 
-- [ ] **Step 7: Set the remaining secrets** *(user action)*
+- [ ] **Step 7: Set the remaining secrets** _(user action)_
 
 On the app service, from the values in the local `.env`:
 
@@ -1065,7 +1086,7 @@ NODE_ENV=production
 
 Do not set `PORT` — Railway injects it.
 
-- [ ] **Step 8: Deploy and watch the logs** *(user action)*
+- [ ] **Step 8: Deploy and watch the logs** _(user action)_
 
 Expected log sequence: pnpm install → build → `prisma migrate deploy` reports 1 migration applied → `health check running on port` → `Client Ready - logged in as ...`.
 
@@ -1085,7 +1106,7 @@ push step is no longer needed. Removes the leftover Google App Engine
 configuration, which has been dead since the move to containers."
 ```
 
-- [ ] **Step 11: Tear down the old infrastructure** *(user action, only after Step 9 passes)*
+- [ ] **Step 11: Tear down the old infrastructure** _(user action, only after Step 9 passes)_
 
 Delete the DigitalOcean app (`a3b323de-7f34-4e2a-b131-59946c59e2f2`) and, if unused elsewhere, the `theithorian/gm-sidekick` Docker Hub repository. Revoke the `DOCKERHUB_TOKEN` GitHub secret and the `DOCKERHUB_USERNAME` variable, which nothing reads any more.
 
@@ -1094,16 +1115,18 @@ Delete the DigitalOcean app (`a3b323de-7f34-4e2a-b131-59946c59e2f2`) and, if unu
 ## Task 10: Documentation
 
 **Files:**
+
 - Create: `CLAUDE.md`
 - Modify: `README.MD`
 
 **Interfaces:**
+
 - Consumes: everything above
 - Produces: nothing downstream — this is the final task
 
 - [ ] **Step 1: Create `CLAUDE.md`**
 
-```markdown
+````markdown
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -1128,21 +1151,22 @@ pnpm db:migrate           # Create and apply a migration locally
 pnpm db:deploy            # Apply pending migrations (what the container runs)
 pnpm deploy-commands      # Register slash commands with Discord
 ```
+````
 
 ## Tech Stack
 
-| Area            | Choice                        |
-| --------------- | ----------------------------- |
-| Runtime         | Node.js 24                    |
-| Package manager | pnpm                          |
-| Language        | TypeScript (strict)           |
-| Database        | PostgreSQL via Prisma         |
-| Discord         | discord.js v14                |
-| Scheduling      | node-schedule                 |
-| Logging         | pino                          |
-| Tests           | vitest                        |
-| Lint / format   | oxlint + oxfmt                |
-| Hosting         | Railway (Dockerfile builder)  |
+| Area            | Choice                       |
+| --------------- | ---------------------------- |
+| Runtime         | Node.js 24                   |
+| Package manager | pnpm                         |
+| Language        | TypeScript (strict)          |
+| Database        | PostgreSQL via Prisma        |
+| Discord         | discord.js v14               |
+| Scheduling      | node-schedule                |
+| Logging         | pino                         |
+| Tests           | vitest                       |
+| Lint / format   | oxlint + oxfmt               |
+| Hosting         | Railway (Dockerfile builder) |
 
 ## Architecture
 
@@ -1187,7 +1211,8 @@ replica would double-post scheduled messages.
 
 Conventional Commits: `<type>(<scope>): <description>`, types
 `feat|fix|chore|test|docs|refactor|style|perf|build|ci`.
-```
+
+````
 
 - [ ] **Step 2: Rewrite the Deploying and Running sections of `README.MD`**
 
@@ -1201,7 +1226,7 @@ pnpm install
 docker compose up -d db
 pnpm db:migrate
 pnpm dev
-```
+````
 
 Or run the whole stack in containers:
 
@@ -1220,6 +1245,7 @@ Slash commands are registered separately, and only need re-running when a comman
 ```sh
 pnpm deploy-commands
 ```
+
 ```
 
 - [ ] **Step 3: Fix the environment variable section of `README.MD`**
@@ -1227,8 +1253,10 @@ pnpm deploy-commands
 Correct the `DATABASE_URL` line and delete the `TEST_DATABASE_URL` line:
 
 ```
+
 DATABASE_URL="postgresql://root:password@localhost:5432/gm_sidekick?schema=public" # Postgres connection string
-```
+
+````
 
 Also delete the stale DigitalOcean link under `## Project` at the bottom of the file.
 
@@ -1242,7 +1270,7 @@ pnpm exec tsc --noEmit
 pnpm build
 pnpm test
 docker compose up --build -d && sleep 15 && curl -i localhost:8080
-```
+````
 
 Expected, in order: install succeeds · no vulnerabilities · lint passes · no type errors · `dist/` produced · tests pass · `HTTP/1.1 200 OK`.
 
@@ -1263,10 +1291,12 @@ DigitalOcean deployment instructions in the README."
 ## Task 11: Upgrade to Prisma 7 (ESM migration)
 
 **Files:**
+
 - Create: `prisma.config.ts`
 - Modify: `package.json`, `tsconfig.json`, `prisma/schema.prisma`, `src/primsaClient.ts`, `.gitignore`, `Dockerfile`, and every file with a relative import (43 files)
 
 **Interfaces:**
+
 - Consumes: a fully green build from Tasks 1–10
 - Produces: nothing downstream
 
@@ -1434,7 +1464,7 @@ configuration moves to prisma.config.ts. The driver adapter setup was
 already in place."
 ```
 
-- [ ] **Step 15: Redeploy and smoke test** *(user action)*
+- [ ] **Step 15: Redeploy and smoke test** _(user action)_
 
 Push to `master`, watch the Railway deploy, then run `/ping` and `/schedule` in Discord.
 

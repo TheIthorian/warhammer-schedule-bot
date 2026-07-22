@@ -91,7 +91,7 @@ export class PollService {
         const ctx = logContext(
             `${PollService.name}.${this.createPoll.name}`,
             { guildConnectionId, messageId, userId, channelId },
-            log
+            log,
         );
 
         if (await this.isExistPollInProgress(guildConnectionId)) {
@@ -113,7 +113,7 @@ export class PollService {
 
     public async addPollAnswer(
         guildConnectionId: number,
-        scheduleResponse: ScheduleResponseWithUsername
+        scheduleResponse: ScheduleResponseWithUsername,
     ): Promise<void> {
         const ctx = logContext(`${PollService.name}.${this.addPollAnswer.name}`, { guildConnectionId }, log);
         const poll = await this.getInProgressPoll(guildConnectionId);

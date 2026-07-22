@@ -4,7 +4,10 @@ import { logContext, makeLogger } from '../util/logger';
 const log = makeLogger(module);
 
 export class QueryService {
-    constructor(private readonly url: string, private readonly api: string) {}
+    constructor(
+        private readonly url: string,
+        private readonly api: string,
+    ) {}
 
     async runQuery(query?: string): Promise<{ content: string; ephemeral: boolean }> {
         const ctx = logContext(`${QueryService.name}.${this.runQuery.name}`, { query, url: this.url });

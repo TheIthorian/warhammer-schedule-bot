@@ -18,7 +18,7 @@ export class DateParser {
             Number(month) - 1,
             Number(day),
             Number(hour ?? 0),
-            Number(minute ?? 0)
+            Number(minute ?? 0),
         );
     }
 }

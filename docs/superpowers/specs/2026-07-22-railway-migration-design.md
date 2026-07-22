@@ -10,16 +10,16 @@ vulnerabilities, and bring the repo's tooling in line with the standards used in
 
 ## Current State
 
-| Area          | Today                                                                     |
-| ------------- | ------------------------------------------------------------------------- |
-| Hosting       | DigitalOcean App Platform, deploying `theithorian/gm-sidekick:latest`     |
-| CI            | `.github/workflows/deploy.yml` builds + pushes to Docker Hub on `master`  |
-| Database      | Postgres via Prisma 6.19 (migrations exist, schema is Postgres-only)      |
-| Prod runtime  | `ts-node index.js` with full `devDependencies` installed in the image     |
-| Package mgr   | npm                                                                       |
-| Tests         | jest + ts-jest + babel-jest, tests in `__test__` / `__tests__` dirs       |
-| Lint / format | eslint (`next/core-web-vitals`) + prettier                                |
-| Vulns         | 25 advisories (17 high), nearly all via `discord.js` → `undici` / `ws`    |
+| Area          | Today                                                                    |
+| ------------- | ------------------------------------------------------------------------ |
+| Hosting       | DigitalOcean App Platform, deploying `theithorian/gm-sidekick:latest`    |
+| CI            | `.github/workflows/deploy.yml` builds + pushes to Docker Hub on `master` |
+| Database      | Postgres via Prisma 6.19 (migrations exist, schema is Postgres-only)     |
+| Prod runtime  | `ts-node index.js` with full `devDependencies` installed in the image    |
+| Package mgr   | npm                                                                      |
+| Tests         | jest + ts-jest + babel-jest, tests in `__test__` / `__tests__` dirs      |
+| Lint / format | eslint (`next/core-web-vitals`) + prettier                               |
+| Vulns         | 25 advisories (17 high), nearly all via `discord.js` → `undici` / `ws`   |
 
 Dead weight found in `package.json`:
 
@@ -67,9 +67,9 @@ Single package — no workspace, no Turborepo. The ctm monorepo machinery does n
 - **tsconfig** rewritten against ctm's `packages/tsconfig/base.json`: `strict`, `noUnusedLocals`,
   `noUnusedParameters`, `noImplicitReturns`, `declaration`, `sourceMap`. The current 300-line commented-out default
   file goes.
-  - Measured cost: **16 errors** under `--strict`, **18** with the unused/return checks, against the current file
-    graph. The existing config uses `files: ["src/app.ts"]`, so widening to `include: ["src"]` may surface more.
-    These get fixed as part of the work, not suppressed.
+    - Measured cost: **16 errors** under `--strict`, **18** with the unused/return checks, against the current file
+      graph. The existing config uses `files: ["src/app.ts"]`, so widening to `include: ["src"]` may surface more.
+      These get fixed as part of the work, not suppressed.
 - `tsconfig.build.json` emits to `dist/` and excludes test files.
 - **Exact pinned versions** — no `^` ranges, matching ctm.
 - **CLAUDE.md** added, documenting stack, commands, and conventions.
@@ -77,7 +77,7 @@ Single package — no workspace, no Turborepo. The ctm monorepo machinery does n
 
 ### 4. Testing: jest → vitest
 
-Jest here requires ts-jest *and* babel-jest — the same babel packages being purged in the dependency cleanup. Vitest
+Jest here requires ts-jest _and_ babel-jest — the same babel packages being purged in the dependency cleanup. Vitest
 uses Vite's esbuild transform, so TypeScript works with no transform config and no babel at all.
 
 Removes: `@babel/core`, `@babel/preset-env`, `babel-jest`, `babel@6`, `ts-jest`, `jest`, `@types/jest`, `.babelrc`,
@@ -193,8 +193,8 @@ runner    node:24-alpine, NODE_ENV=production, prod deps + dist/ + prisma/ + gen
 
 ## Risks
 
-| Risk                                                                | Mitigation                                                              |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Risk                                                                 | Mitigation                                                              |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | `discord.js` minor bump changes API surface                          | Full test run plus a manual smoke test of `/schedule` before cutover    |
 | Strict TypeScript surfaces more than 18 errors once `include` widens | Fix them; if the count is unexpectedly large, split into its own commit |
 | Vitest snapshot format differs from jest                             | Regenerate snapshots, review the diff rather than accepting blind       |

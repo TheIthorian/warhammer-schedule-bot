@@ -13,8 +13,8 @@ export class BookCommand implements Command {
         this.data = new SlashCommandBuilder()
             .setName('book')
             .setDescription('Book the next session')
-            .addStringOption(option =>
-                option.setName('date').setDescription('Date of the session to book').setRequired(true)
+            .addStringOption((option) =>
+                option.setName('date').setDescription('Date of the session to book').setRequired(true),
             )
             .setName('book'); // casts type back to slash command builder
     }

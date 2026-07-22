@@ -16,18 +16,18 @@ describe('ReminderService', () => {
             const result = reminderService.getDateAndResponseFromCommandInput('invalid_date') as InvalidDateResponse;
             expect(result.isSuccess).toBe(false);
             expect(result.responseContent).toContain(
-                'invalid_date is not a valid date. Please use the format: DD/MM/YY HH:MM:SS'
+                'invalid_date is not a valid date. Please use the format: DD/MM/YY HH:MM:SS',
             );
         });
 
         test('should handle date in the past', () => {
             const result = reminderService.getDateAndResponseFromCommandInput(
-                '01/01/21 00:00:00'
+                '01/01/21 00:00:00',
             ) as InvalidDateResponse;
 
             expect(result.isSuccess).toBe(false);
             expect(result.responseContent).toContain(
-                '01/01/21 00:00:00 is in the past. Please choose a date in the future, using the format: DD/MM/YY HH:MM:SS'
+                '01/01/21 00:00:00 is in the past. Please choose a date in the future, using the format: DD/MM/YY HH:MM:SS',
             );
         });
 

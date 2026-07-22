@@ -10,7 +10,10 @@ const log = makeLogger(module);
 export class ScheduleCommand implements Command {
     public readonly data: SlashCommandBuilder;
 
-    constructor(private readonly partyScheduler: PollService, private readonly scheduleService: ScheduleService) {
+    constructor(
+        private readonly partyScheduler: PollService,
+        private readonly scheduleService: ScheduleService,
+    ) {
         this.data = new SlashCommandBuilder()
             .setName('schedule')
             .setDescription('Asks the group to schedule the next session');
@@ -20,7 +23,7 @@ export class ScheduleCommand implements Command {
         const ctx = logContext(
             `${ScheduleCommand.name}.${this.execute.name}`,
             getInteractionLogDetails(interaction),
-            log
+            log,
         );
 
         const { user, channelId } = interaction;

@@ -18,7 +18,10 @@ export type ValidatePollInProgressOutputFalse = { inProgress: false };
 const POLL_CREATION_TEXT = 'Hey everyone 👋 Please select the days that you are available next week';
 
 export class ScheduleService {
-    constructor(private readonly pollService: PollService, private readonly discordClient: Client) {}
+    constructor(
+        private readonly pollService: PollService,
+        private readonly discordClient: Client,
+    ) {}
 
     public async validatePollInProgress(guildConnectionId: number): Promise<ValidatePollInProgressOutput> {
         const [inProgressPoll] = await this.pollService.getInProgressPoll(guildConnectionId);
@@ -56,7 +59,7 @@ export class ScheduleService {
             const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
 
             const disabledDaysOfTheWeekMenuRow = daysOfTheWeekMenuRow();
-            disabledDaysOfTheWeekMenuRow.components.forEach(c => c.setDisabled(true));
+            disabledDaysOfTheWeekMenuRow.components.forEach((c) => c.setDisabled(true));
 
             await pollMessage.edit({
                 components: [disabledDaysOfTheWeekMenuRow],
@@ -99,7 +102,7 @@ function daysOfTheWeekMenuRow(): ActionRowBuilder<StringSelectMenuBuilder> {
         .setPlaceholder('Make a selection!')
         .setMinValues(0)
         .setMaxValues(7)
-        .addOptions(DAYS_OF_THE_WEEK.map(day => new StringSelectMenuOptionBuilder().setLabel(day).setValue(day)));
+        .addOptions(DAYS_OF_THE_WEEK.map((day) => new StringSelectMenuOptionBuilder().setLabel(day).setValue(day)));
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 
     return row;

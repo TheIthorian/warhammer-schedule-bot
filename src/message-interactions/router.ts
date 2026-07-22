@@ -9,7 +9,7 @@ const log = makeLogger(module);
 export class MessageComponentInteractionRouter extends InteractionRouter {
     constructor(
         private readonly interactionHandlers: Record<number, MessageComponentInteractionHandler>,
-        spamProtection: SpamProtection
+        spamProtection: SpamProtection,
     ) {
         super(spamProtection);
     }

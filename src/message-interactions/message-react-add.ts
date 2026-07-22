@@ -9,12 +9,12 @@ const log = makeLogger(module);
 export class MessageReactAddHandler {
     async execute(
         interaction: MessageReaction | PartialMessageReaction,
-        reactionUser: User | PartialUser
+        reactionUser: User | PartialUser,
     ): Promise<void> {
         const ctx = logContext(
             `${MessageReactAddHandler.name}.${this.execute.name}`,
             { user: reactionUser.username, messageId: interaction.message.id },
-            log
+            log,
         );
 
         if (!isUserAdmin(reactionUser)) {
@@ -41,15 +41,15 @@ function reactionIsUpEmoji(interaction: MessageReaction | PartialMessageReaction
 
 async function copyAdminReactions(
     interaction: MessageReaction | PartialMessageReaction,
-    reactionUser: User | PartialUser
+    reactionUser: User | PartialUser,
 ) {
     await Promise.all(
-        interaction.message.reactions.cache.map(async reaction => {
+        interaction.message.reactions.cache.map(async (reaction) => {
             const users = await reaction.users.fetch();
-            if (users.some(user => user.id === reactionUser.id)) {
+            if (users.some((user) => user.id === reactionUser.id)) {
                 reaction.react();
             }
-        })
+        }),
     );
 }
 
@@ -57,7 +57,7 @@ async function messageContainsUpEmoji(interaction: MessageReaction | PartialMess
     log.info(`Checking if message contains up emoji`);
 
     const allUpEmojiReactions = interaction.message.reactions.cache.filter(
-        reaction => reaction.emoji.identifier === UP_EMOJI_IDENTIFIER
+        (reaction) => reaction.emoji.identifier === UP_EMOJI_IDENTIFIER,
     );
 
     for (const adminUserId of config.adminUsers) {
@@ -66,11 +66,11 @@ async function messageContainsUpEmoji(interaction: MessageReaction | PartialMess
 
             console.log(`${messageContainsUpEmoji.name}`, {
                 adminUserId,
-                users: users.map(user => user.id),
+                users: users.map((user) => user.id),
                 emoji: upEmojiReaction[1].emoji,
             });
 
-            if (users.some(user => user.id === adminUserId)) return true;
+            if (users.some((user) => user.id === adminUserId)) return true;
         }
     }
 
