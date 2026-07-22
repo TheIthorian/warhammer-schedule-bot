@@ -1,4 +1,5 @@
 import { time } from 'discord.js';
+import moment from 'moment-timezone';
 import prisma from '../primsaClient';
 import { DateParser } from '../util/date-parser';
 import { logContext, makeLogger } from '../util/logger';
@@ -7,7 +8,10 @@ type AddReminderInput = {
     date: Date;
     guildConnectionId: number;
     channelId: string;
+    timezone: string;
 };
+
+const HOUR_IN_MS = 60 * 60 * 1000;
 
 type GetDateAndResponseFromCommandInputOutput =
     | { inputDate: Date; responseContent: string; isSuccess: false }
@@ -18,10 +22,13 @@ const log = makeLogger(module);
 export class ReminderService {
     constructor(private readonly dateParser: DateParser) {}
 
-    public getDateAndResponseFromCommandInput(inputDateString: string): GetDateAndResponseFromCommandInputOutput {
-        const ctx = logContext(this.getDateAndResponseFromCommandInput.name, { inputDateString }, log);
+    public getDateAndResponseFromCommandInput(
+        inputDateString: string,
+        timezone: string,
+    ): GetDateAndResponseFromCommandInputOutput {
+        const ctx = logContext(this.getDateAndResponseFromCommandInput.name, { inputDateString, timezone }, log);
 
-        const inputDate = this.dateParser.parseNative(inputDateString);
+        const inputDate = this.dateParser.parseNative(inputDateString, timezone);
 
         if (isNaN(inputDate.getTime())) {
             log.info(`${ctx} invalid date input: ${inputDateString}`);
@@ -49,13 +56,14 @@ export class ReminderService {
     }
 
     public async addReminder(input: AddReminderInput): Promise<void> {
-        const { guildConnectionId, channelId, date } = input;
+        const { guildConnectionId, channelId, date, timezone } = input;
 
-        const dayReminder = new Date(date);
-        dayReminder.setHours(10, 0, 0, 0);
+        // 10am on the session's local calendar day. `setHours` would have used the host zone (UTC on Railway),
+        // which both picks the wrong hour and, near midnight, the wrong day.
+        const dayReminder = moment.tz(date, timezone).startOf('day').hour(10).toDate();
 
-        const hourReminder = new Date(date);
-        hourReminder.setHours(date.getHours() - 1);
+        // An hour before kickoff is an absolute offset, so no zone maths is needed.
+        const hourReminder = new Date(date.getTime() - HOUR_IN_MS);
 
         await prisma.$transaction([
             prisma.scheduledMessage.create({

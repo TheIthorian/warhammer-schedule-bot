@@ -1,4 +1,5 @@
 import { ReminderService } from '../services/reminder.service';
+import { UserTimezoneService } from '../services/user-timezone.service';
 import { CacheType, ChatInputCommandInteraction, SharedSlashCommand, SlashCommandBuilder, time } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
@@ -9,7 +10,10 @@ const log = makeLogger(module);
 export class BookCommand implements Command {
     public readonly data: SharedSlashCommand;
 
-    constructor(private readonly reminderService: ReminderService) {
+    constructor(
+        private readonly reminderService: ReminderService,
+        private readonly userTimezoneService: UserTimezoneService,
+    ) {
         this.data = new SlashCommandBuilder()
             .setName('book')
             .setDescription('Book the next session')
@@ -29,7 +33,20 @@ export class BookCommand implements Command {
             return;
         }
 
-        const response = this.reminderService.getDateAndResponseFromCommandInput(inputDateString);
+        const timezone = await this.userTimezoneService.getTimezone(interaction.user.id);
+
+        if (timezone === null) {
+            log.info(`${ctx} user has no timezone set`);
+            await interaction.reply({
+                content:
+                    "I don't know your timezone yet, so I can't tell what time you mean. " +
+                    'Set it with `/timezone` (e.g. `/timezone Europe/London`) and then book again.',
+                ephemeral: true,
+            });
+            return;
+        }
+
+        const response = this.reminderService.getDateAndResponseFromCommandInput(inputDateString, timezone);
 
         if (response.isSuccess === false) {
             log.info({ inputDateString }, `${ctx} error parsing date`);
@@ -43,6 +60,6 @@ export class BookCommand implements Command {
         });
 
         const { channelId } = interaction;
-        await this.reminderService.addReminder({ date: response.inputDate, guildConnectionId, channelId });
+        await this.reminderService.addReminder({ date: response.inputDate, guildConnectionId, channelId, timezone });
     }
 }

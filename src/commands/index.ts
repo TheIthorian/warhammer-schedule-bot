@@ -11,12 +11,15 @@ import { rollService } from '../services/roll.service';
 import { scheduleService } from '../scheduling/schedule-service';
 import { QueryCommand } from './query';
 import { queryService } from '../services/query.service';
+import { TimezoneCommand } from './timezone';
+import { userTimezoneService } from '../services/user-timezone.service';
 
 export const commands: Array<Command> = [
     new PingCommand(),
     new ScheduleCommand(pollService, scheduleService),
-    new BookCommand(reminderService),
+    new BookCommand(reminderService, userTimezoneService),
     new RollCommand(rollService),
     new QueryCommand(queryService),
+    new TimezoneCommand(userTimezoneService),
 ];
 export const commandInteractionRouter = new CommandInteractionRouter(commands, linearSpamProtection);

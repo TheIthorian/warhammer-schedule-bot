@@ -46,6 +46,13 @@ export async function start(): Promise<void> {
             return;
         }
 
+        // Answered before the guild-connection lookup below: Discord drops the suggestions if we take longer than
+        // 3 seconds, and an autocomplete keystroke should not be doing database writes.
+        if (interaction.isAutocomplete()) {
+            await commandInteractionRouter.handleAutocomplete(interaction);
+            return;
+        }
+
         try {
             const { id: guildConnectionId } = await createGuildConnectionIfNeeded({
                 guildId,

@@ -62,6 +62,20 @@ pnpm invite-link          # Print an OAuth invite link for the bot
   nullable types. Log and return early rather than asserting with `!`.
 - **Trailing commas** on multi-line constructs.
 
+### Timezones
+
+- **Discord never tells you a user's timezone.** Interaction payloads carry `locale` (`en-GB`) and `guild_locale`,
+  and neither maps to a zone — `en-US` alone spans six. The user's zone is stored in `UserTimezone`, set via
+  `/timezone`, and `/book` refuses to parse a date until it is set.
+- **Never build a user-facing time with `new Date(y, m, d, h)` or `setHours`.** Both resolve against the host
+  timezone, which is UTC in the Railway container and local on a developer machine — so the bug is invisible in
+  London during winter and wrong everywhere else. This is exactly how `/book` silently shifted every booking. Use
+  `moment.tz(..., zone)` and the helpers in `src/util/date-parser.ts`.
+- **A two-digit year means the 2000s.** `DD/MM/YY` input expands `99` to `2099`, not moment's default of `1999`.
+  The bot only ever books future sessions, and moment's pivot would reject them as being in the past.
+- **Fixed absolute offsets need no zone maths.** The one-hour-before reminder is `date.getTime() - HOUR_IN_MS`; only
+  wall-clock anchors like "10am on the day" have to go through the booker's zone.
+
 ### Database
 
 - **Postgres everywhere** — production, local, and tests. Never SQLite; the bot's domain is scheduling, and SQLite's
@@ -83,7 +97,6 @@ pnpm invite-link          # Print an OAuth invite link for the bot
 - Tests run serially (`fileParallelism: false` in `vitest.config.ts`) because they share one database. Vitest 4
   removed the older `poolOptions.forks.singleFork` setting; `fileParallelism` is what actually takes effect now —
   don't reach for `poolOptions` here, it's silently ignored.
-- Currently 61 tests across 9 files, all passing.
 
 ### Deployment
 
