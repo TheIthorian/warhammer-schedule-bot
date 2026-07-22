@@ -1216,6 +1216,7 @@ Delete the DigitalOcean app (`a3b323de-7f34-4e2a-b131-59946c59e2f2`) and, if unu
 ## Task 9a: Restore CI
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 **Why this exists:** Task 9 deleted `.github/workflows/deploy.yml`, which was the repo's only workflow. Railway now deploys directly from `master`, so without a test gate a red commit builds and ships to the live bot with nothing catching it.
@@ -1227,6 +1228,7 @@ This runs tests; it does not gate the deploy. Railway is not configured to wait 
 The workflow needs a real Postgres, because these are integration tests that use the database rather than mocking it. Use a service container.
 
 Requirements:
+
 - Triggers on `push` and `pull_request`
 - Postgres 17 service container, database `gm_sidekick`, user `root`, password `password`, with a health-check gate so tests do not start before it accepts connections
 - Node 24 and pnpm 11.1.3, matching `.nvmrc` and `packageManager`

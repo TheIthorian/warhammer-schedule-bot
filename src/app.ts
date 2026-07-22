@@ -92,11 +92,9 @@ export async function start(): Promise<void> {
     // Registered on every boot so a deploy that adds or changes a command takes effect without a manual step.
     // Deliberately not fatal: a registration failure leaves the previously registered commands in place, which is
     // better than refusing to start and losing scheduled messages.
-    try {
-        await registerCommands();
-    } catch (error) {
-        log.error(error, 'Failed to register application commands - continuing with the previously registered set');
-    }
+    await registerCommands().catch((error) =>
+        log.error(error, 'Failed to register application commands - continuing with the previously registered set'),
+    );
 
     client.login(config.botToken).catch((error: unknown) => {
         log.fatal(error, 'Failed to log in to Discord - exiting');
