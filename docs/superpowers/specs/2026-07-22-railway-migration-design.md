@@ -14,7 +14,7 @@ vulnerabilities, and bring the repo's tooling in line with the standards used in
 | ------------- | ------------------------------------------------------------------------ |
 | Hosting       | DigitalOcean App Platform, deploying `theithorian/gm-sidekick:latest`    |
 | CI            | `.github/workflows/deploy.yml` builds + pushes to Docker Hub on `master` |
-| Database      | Postgres via Prisma 6.19 (migrations exist, schema is Postgres-only)     |
+| Database      | **Nominally** Postgres via Prisma 6.19 — in practice still SQLite (see below) |
 | Prod runtime  | `ts-node index.js` with full `devDependencies` installed in the image    |
 | Package mgr   | npm                                                                      |
 | Tests         | jest + ts-jest + babel-jest, tests in `__test__` / `__tests__` dirs      |
@@ -209,6 +209,27 @@ runner    node:24-alpine, NODE_ENV=production, prod deps + dist/ + prisma/ + gen
 5. `docker compose up` → app boots, health endpoint returns 200
 6. Railway deploy succeeds; bot comes online in Discord and `/ping` responds
 7. DigitalOcean app and Docker Hub repo torn down only after step 6 passes
+
+## Correction: the Postgres migration was never completed
+
+Discovered during Task 5, after this spec was approved. The "Current State" table above originally recorded the
+project as running on Postgres. That was wrong, and the error came from reading `schema.prisma` (which does declare
+`postgresql`) without checking whether anything downstream agreed.
+
+Three pieces of evidence, all found during implementation:
+
+- `prisma/migrations/migration_lock.toml` recorded `provider = "sqlite"`.
+- Two migrations contained `AUTOINCREMENT`, which is SQLite-only.
+- `src/services/poll.service.ts` contains three raw SQL queries written against SQLite's case-insensitive
+  identifiers. Postgres folds unquoted identifiers to lowercase while Prisma creates them case-preserved, so every
+  one of these queries fails. `getInProgressPoll` and `closePoll` — behind `/schedule` and `/book` — have never run
+  successfully on Postgres.
+
+`pg` was also missing from `dependencies` despite `src/primsaClient.ts` importing `Pool` from it. It resolved only
+transitively, which pnpm's strict layout does not permit — the container would have crashed on boot.
+
+This work is therefore not "move a working Postgres app to Railway". It is "finish the abandoned Postgres migration,
+then move it". Task 6a in the implementation plan covers porting the raw SQL to Prisma's query builder.
 
 ## Accepted Tradeoffs (recorded during implementation)
 

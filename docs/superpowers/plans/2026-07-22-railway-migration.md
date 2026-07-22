@@ -722,6 +722,88 @@ data is ephemeral, so the history is rebuilt from the current schema."
 
 ---
 
+## Task 6a: Port `poll.service.ts` off SQLite-only raw SQL
+
+**Files:**
+- Modify: `src/services/poll.service.ts`, and any caller whose expectations change
+- Test: `src/services/__tests__/poll.service.test.ts` and the other suites currently failing
+
+**Interfaces:**
+- Consumes: the working migration history from Task 6
+- Produces: a green test suite — the gate every later task's verification assumes
+
+**Why this exists:** discovered during Task 5. The spec's "Current State" table claimed the project already ran on Postgres. It did not. `migration_lock.toml` recorded `sqlite`, and `poll.service.ts` contains three raw SQL queries written for SQLite:
+
+```sql
+SELECT P.id as pollId, P.guildConnectionId, P.status, P.messageId, P.messageUrl, P.channelId,
+       PA.userId, PA.answer, PA.username
+FROM Poll P
+LEFT JOIN PollAnswer PA ON PA.pollId = P.id
+WHERE P.guildConnectionId = ${guildConnectionId}
+```
+
+SQLite treats identifiers case-insensitively. Postgres folds unquoted identifiers to lowercase, while Prisma creates `"Poll"` and `"guildConnectionId"` case-preserved. Every one of these queries fails against Postgres. This is the root cause of all 13 test failures at the end of Task 5, and it means `/schedule` and `/book` — the bot's core features — have never worked on Postgres.
+
+**The decision:** replace the raw SQL with Prisma's query builder rather than quoting identifiers. Quoting is the smaller diff but leaves the trap in place for the next raw query, and it is easy to half-fix — aliases fold too, so `as pollId` returns `pollid` and a fix that only quotes table names leaves `pollId` undefined, which makes `closePoll` run `WHERE id = undefined`.
+
+- [ ] **Step 1: Start from a known state**
+
+```bash
+docker compose up -d db
+pnpm test 2>&1 | tail -20
+```
+
+Expected: 13 failures, all tracing to `poll.service.ts`. Record the exact list — it is the work queue and the completion gate.
+
+- [ ] **Step 2: Rewrite `getInProgressPoll`**
+
+Replace the `$queryRaw` with a `prisma.poll.findMany` that includes `PollAnswers`, filtered on `guildConnectionId` and `status: 'inProgress'`, ordered by poll `id` then answer `answeredDate` ascending.
+
+Read the existing method and its `PollDetails` return type first. The raw query returns a **flat, joined row per answer**; a Prisma `include` returns **nested** poll objects with an answers array. Either map the nested result back to the flat shape the callers expect, or update the callers — decide based on which produces clearer code, and say which you chose and why.
+
+- [ ] **Step 3: Rewrite `closePoll`**
+
+Same treatment for the `$queryRaw<PollWithAnswers[]>`, then replace the `$executeRaw UPDATE Poll SET status = 'closed'` with `prisma.poll.update`.
+
+Note the existing code indexes `pollWithAnswers[0].pollId` without checking the array is non-empty — closing a poll with no answers would throw on undefined. Handle that case explicitly rather than reproducing it.
+
+- [ ] **Step 4: Verify no raw SQL remains**
+
+```bash
+grep -rn 'queryRaw\|executeRaw' src/
+```
+
+Expected: no matches. If a query genuinely cannot be expressed through the query builder, leave it, quote every identifier **including aliases**, and justify it in your report.
+
+- [ ] **Step 5: Green suite**
+
+Run: `pnpm test`
+Expected: all tests pass, output pristine.
+
+This is also the deferred verification of Task 4's `addPollResponse` reordering (commit `46f779f`), which Task 5 could not check because these tests were failing. Confirm those assertions specifically.
+
+- [ ] **Step 6: Typecheck and lint**
+
+```bash
+pnpm exec tsc --noEmit
+pnpm lint
+```
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add -A
+git commit -m "fix(db): port poll queries from SQLite raw SQL to Prisma
+
+The three raw queries in poll.service.ts used unquoted identifiers,
+which SQLite treats case-insensitively but Postgres folds to lowercase
+while Prisma creates them case-preserved. They have never worked against
+Postgres. Using the query builder removes the identifier-folding trap
+rather than papering over it with quoting."
+```
+
+---
+
 ## Task 7: Multi-stage Dockerfile
 
 **Files:**
