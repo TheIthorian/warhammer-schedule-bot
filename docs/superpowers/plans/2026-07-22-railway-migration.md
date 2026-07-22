@@ -1213,6 +1213,46 @@ Delete the DigitalOcean app (`a3b323de-7f34-4e2a-b131-59946c59e2f2`) and, if unu
 
 ---
 
+## Task 9a: Restore CI
+
+**Files:**
+- Create: `.github/workflows/ci.yml`
+
+**Why this exists:** Task 9 deleted `.github/workflows/deploy.yml`, which was the repo's only workflow. Railway now deploys directly from `master`, so without a test gate a red commit builds and ships to the live bot with nothing catching it.
+
+This runs tests; it does not gate the deploy. Railway is not configured to wait on it — that would need dashboard setup and was deliberately not chosen.
+
+- [ ] **Step 1: Create `.github/workflows/ci.yml`**
+
+The workflow needs a real Postgres, because these are integration tests that use the database rather than mocking it. Use a service container.
+
+Requirements:
+- Triggers on `push` and `pull_request`
+- Postgres 17 service container, database `gm_sidekick`, user `root`, password `password`, with a health-check gate so tests do not start before it accepts connections
+- Node 24 and pnpm 11.1.3, matching `.nvmrc` and `packageManager`
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm exec prisma migrate deploy`, then `pnpm test`
+- `TEST_DATABASE_URL` and `DATABASE_URL` both set — `src/config.ts` swaps in `TEST_DATABASE_URL` when `NODE_ENV=test`
+- Inside a GitHub Actions service container the host is `localhost:5432`, not 55432 — the 55432 mapping is a local-machine workaround for a port conflict and does not apply in CI
+- Pin actions to major versions
+
+- [ ] **Step 2: Verify the workflow is valid**
+
+Actions cannot be run locally here. Validate the YAML parses and check every script name it invokes exists in `package.json`.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add .github/workflows/ci.yml
+git commit -m "ci: run lint, typecheck and tests on push
+
+Railway deploys directly from master, so without a test gate a red
+commit ships to the live bot. Uses a Postgres service container because
+these are integration tests that use a real database."
+```
+
+---
+
 ## Task 10: Documentation
 
 **Files:**
