@@ -49,7 +49,6 @@ pnpm invite-link          # Print an OAuth invite link for the bot
 - `src/scheduling/` — poll creation, result formatting, and the scheduled message processor
 - `src/services/` — data access on top of Prisma
 - `src/spam/` — command-spam protection
-- `src/oauth/` — Discord OAuth flow
 - `prisma/schema.prisma` — database schema
 
 ## Conventions

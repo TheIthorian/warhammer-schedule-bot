@@ -1,6 +1,6 @@
 import Module from 'module';
 import { createWriteStream } from 'fs';
-import { multistream, pino } from 'pino';
+import { multistream, pino, type StreamEntry } from 'pino';
 import { config } from '../config';
 
 const DEFAULT_LEVEL = 'debug';
@@ -24,7 +24,7 @@ export interface Logger {
 }
 
 export function makeLogger(module: Module | undefined, level = DEFAULT_LEVEL): Logger {
-    const streams = [{ stream: process.stdout }] as any[];
+    const streams: StreamEntry[] = [{ stream: process.stdout }];
     if (config.isLocal) {
         streams.push({ stream: createWriteStream(LOG_FILE, { flags: 'a' }) });
     }

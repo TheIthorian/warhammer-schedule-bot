@@ -25,8 +25,10 @@ ADMIN_USERS='' # Comma delimited list of users who are admins. Have increased pe
 ```
 
 Running the test suite also needs `.env.test` (copy `.env.test.example`). It sets `TEST_DATABASE_URL`, which
-`src/config.ts` swaps in for `DATABASE_URL` whenever `NODE_ENV=test`, so the app code under test never talks to the
-database used for local development.
+`src/config.ts` swaps in for `DATABASE_URL` whenever `NODE_ENV=test`. **Both files point at the same local Postgres
+database as development** — there is no separate test database. Tests are only safe because each one scopes its
+`deleteMany` cleanup to a freshly generated `guildConnectionId`. Any new test that writes to the database must do the
+same, or it will delete local development data.
 
 ## Running locally
 
@@ -37,7 +39,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Or run the whole stack in containers:
+Or run the whole stack in containers. Copy `.docker.env.example` to `.docker.env` and fill it in, then:
 
 ```sh
 docker compose up --build

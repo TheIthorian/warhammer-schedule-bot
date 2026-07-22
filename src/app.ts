@@ -81,7 +81,10 @@ export async function start(): Promise<void> {
         }
     });
 
-    client.login(config.botToken);
+    client.login(config.botToken).catch((error: unknown) => {
+        log.fatal(error, 'Failed to log in to Discord - exiting');
+        process.exit(1);
+    });
 
     const scheduledMessageProcessor = new ScheduledMessageProcessor(client);
     scheduledMessageProcessor.start();
