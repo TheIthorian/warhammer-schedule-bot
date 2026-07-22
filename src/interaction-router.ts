@@ -6,10 +6,14 @@ import { getInteractionLogDetails } from './util/interaction-info';
 
 const log = makeLogger(module);
 
-export abstract class InteractionRouter {
+export type InteractionHandler<TInteraction extends Interaction> = {
+    execute(interaction: TInteraction, guildConnectionId: number): Promise<void>;
+};
+
+export abstract class InteractionRouter<TInteraction extends Interaction> {
     constructor(private readonly spamProtection: SpamProtection) {}
 
-    async handle(interaction: Interaction, guildConnectionId: number): Promise<void> {
+    async handle(interaction: TInteraction, guildConnectionId: number): Promise<void> {
         const ctx = logContext(`${InteractionRouter.name}.${this.handle.name}`, getInteractionLogDetails(interaction));
 
         const spamKey = this.getSpamKey(interaction);
@@ -37,21 +41,19 @@ export abstract class InteractionRouter {
         }
     }
 
-    protected abstract getSpamKey(interaction: Interaction): string;
+    protected abstract getSpamKey(interaction: TInteraction): string;
 
-    protected abstract getHandler(interaction: Interaction): {
-        execute: (interaction: Interaction, guildConnectionId: number) => Promise<void>;
-    };
+    protected abstract getHandler(interaction: TInteraction): InteractionHandler<TInteraction> | undefined;
 
-    protected async handleSpamError(interaction: Interaction, message: string) {
+    protected async handleSpamError(interaction: Interaction, message: string): Promise<void> {
         await this.respond(interaction, message);
     }
 
-    protected async handleError(interaction: Interaction) {
+    protected async handleError(interaction: Interaction): Promise<void> {
         await this.respond(interaction, 'There was an error while executing this command!');
     }
 
-    protected async respond(interaction: Interaction, content: string) {
+    protected async respond(interaction: Interaction, content: string): Promise<void> {
         if (!interaction.isRepliable()) return;
 
         if (interaction.replied || interaction.deferred) {

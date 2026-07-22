@@ -63,7 +63,14 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
         log.info(`${ctx} poll answer added.`);
         await interaction.reply({ content: `You have selected ${interaction.values.join(', ')}!`, ephemeral: true });
 
-        if (await this.pollService.hasEveryoneResponded(guildConnectionId, interaction.guild.memberCount)) {
+        const { guild } = interaction;
+
+        if (!guild) {
+            log.error(`${ctx} interaction has no guild - cannot check whether everyone has responded`);
+            return;
+        }
+
+        if (await this.pollService.hasEveryoneResponded(guildConnectionId, guild.memberCount)) {
             log.info(`${ctx} everyone has responded.`);
             await interaction.followUp({ content: 'Everyone has replied! You may close the poll' });
         }

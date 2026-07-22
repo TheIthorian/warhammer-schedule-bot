@@ -10,6 +10,9 @@ import {
 import { PollService, pollService } from '../services/poll.service';
 import { DAYS_OF_THE_WEEK, DayOfTheWeek } from '../constants';
 import { client } from '../discord-client';
+import { makeLogger } from '../util/logger';
+
+const log = makeLogger(module);
 
 export type ValidatePollInProgressOutput = ValidatePollInProgressOutputTrue | ValidatePollInProgressOutputFalse;
 export type ValidatePollInProgressOutputTrue = { inProgress: true; reply: InteractionReplyOptions };
@@ -55,6 +58,12 @@ export class ScheduleService {
     public async disablePoll(channelId: string, messageId: string): Promise<void> {
         const channel =
             this.discordClient.channels.cache.get(channelId) || (await this.discordClient.channels.fetch(channelId));
+
+        if (!channel) {
+            log.error({ channelId }, 'Channel not found');
+            return;
+        }
+
         if (channel.isTextBased()) {
             const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
 
@@ -76,6 +85,12 @@ export class ScheduleService {
         guildConnectionId: number;
     }): Promise<void> {
         const channel = this.discordClient.channels.cache.get(input.channelId);
+
+        if (!channel) {
+            log.error({ channelId: input.channelId }, 'Channel not found in cache');
+            return;
+        }
+
         if (channel.isTextBased()) {
             await this.pollService.addPollAnswer(input.guildConnectionId, {
                 userId: input.userId,
@@ -90,6 +105,11 @@ export class ScheduleService {
             const thread = pollMessage.hasThread
                 ? pollMessage.thread
                 : await pollMessage.startThread({ name: 'Responders' });
+
+            if (!thread) {
+                log.error({ channelId: input.channelId, messageId }, 'Poll message has no thread');
+                return;
+            }
 
             await thread.send(`${input.username} selected ${input.answer.join(', ')}`);
         }

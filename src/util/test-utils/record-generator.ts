@@ -7,7 +7,7 @@ export async function makeGuild() {
     const channelId = randomUUID();
     const connectionUserId = randomUUID();
 
-    const username = faker.internet.userName();
+    const username = faker.internet.username();
     const email = faker.internet.email();
 
     const guildConnection = await prisma.guildConnection.create({

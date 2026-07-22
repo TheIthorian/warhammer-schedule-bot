@@ -1,6 +1,6 @@
 import Module from 'module';
 import { createWriteStream } from 'fs';
-import { pino } from 'pino';
+import { multistream, pino } from 'pino';
 import { config } from '../config';
 
 const DEFAULT_LEVEL = 'debug';
@@ -36,7 +36,7 @@ export function makeLogger(module: Module | undefined, level = DEFAULT_LEVEL): L
         name = `${lastPart.join('/')}`;
     }
 
-    return pino({ level, name }, pino.multistream(streams));
+    return pino({ level, name }, multistream(streams));
 }
 
 export function logContext(

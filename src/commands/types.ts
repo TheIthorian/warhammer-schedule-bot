@@ -1,6 +1,6 @@
-import { Interaction, SlashCommandBuilder } from 'discord.js';
+import { CacheType, ChatInputCommandInteraction, SharedSlashCommand } from 'discord.js';
 
 export interface Command {
-    data: SlashCommandBuilder;
-    execute(interaction: Interaction, guildConnectionId: number): Promise<void>;
+    data: SharedSlashCommand;
+    execute(interaction: ChatInputCommandInteraction<CacheType>, guildConnectionId: number): Promise<void>;
 }

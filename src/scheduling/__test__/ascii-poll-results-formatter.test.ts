@@ -56,8 +56,6 @@ describe('AsciiPollResultsFormatter', () => {
 });
 
 describe('extractResponses', () => {
-    const responseTime = new Date().getTime();
-
     test('extractResponses returns an array of ScheduleResponse', () => {
         const responses = new Map<string, ScheduleResponse>();
         responses.set('user:1', {

@@ -2,29 +2,30 @@ import { pollService } from '../../services/poll.service';
 import { ScheduleService } from '../schedule-service';
 import { guildConnectionService } from '../../services/guild-connection.service';
 import { faker } from '@faker-js/faker';
+import { vi } from 'vitest';
 import { Channel, Client, Message } from 'discord.js';
 import prisma from '../../primsaClient';
 
-const mockDiscordClient = { channels: { cache: new Map<string, Channel>(), fetch: jest.fn() } };
+const mockDiscordClient = { channels: { cache: new Map<string, Channel>(), fetch: vi.fn() } };
 const mockChannel = {
-    messages: { cache: new Map<string, Message<boolean>>(), fetch: jest.fn() },
-    isTextBased: jest.fn(),
+    messages: { cache: new Map<string, Message<boolean>>(), fetch: vi.fn() },
+    isTextBased: vi.fn(),
 };
 const mockMessage = {
-    edit: jest.fn(),
-    startThread: jest.fn(),
+    edit: vi.fn(),
+    startThread: vi.fn(),
     hasThread: false,
-    thread: { send: jest.fn() },
+    thread: { send: vi.fn() },
 };
 
 describe('ScheduleService', () => {
-    let guildConnection;
+    let guildConnection: Awaited<ReturnType<typeof guildConnectionService.createGuildConnection>>;
 
     const guildId = faker.string.numeric();
     const channelId = faker.string.numeric();
     const userId = faker.string.numeric();
     const connectionUserId = faker.string.numeric();
-    const username = faker.internet.userName();
+    const username = faker.internet.username();
 
     const scheduleService = new ScheduleService(pollService, mockDiscordClient as unknown as Client);
 
@@ -37,7 +38,7 @@ describe('ScheduleService', () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('validatePollInProgress', () => {

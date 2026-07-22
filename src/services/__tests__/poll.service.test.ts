@@ -13,8 +13,8 @@ describe('PartyScheduler', () => {
     const userId1 = randomUUID();
     const userId2 = randomUUID();
 
-    const username1 = faker.internet.userName();
-    const username2 = faker.internet.userName();
+    const username1 = faker.internet.username();
+    const username2 = faker.internet.username();
 
     const partyScheduler = new PollService();
 

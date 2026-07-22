@@ -1,4 +1,4 @@
-import { Client } from 'discord.js';
+import { ChannelType, Client } from 'discord.js';
 import schedule from 'node-schedule'; // https://www.npmjs.com/package/node-schedule
 import { logContext, makeLogger } from '../util/logger';
 import prisma from '../primsaClient';
@@ -68,9 +68,14 @@ export class ScheduledMessageProcessor {
         logContext(this.processMessage.name, { id, channelId }, log);
 
         const channel = await this.discordClient.channels.fetch(channelId);
-        if (channel.isTextBased()) {
-            await channel.send(messageContent);
+
+        // PartialGroupDMChannel is text based but has no `send` method.
+        if (!channel || !channel.isTextBased() || channel.type === ChannelType.GroupDM) {
+            log.error({ id, channelId }, 'Channel not found or is not a sendable text channel');
+            return;
         }
+
+        await channel.send(messageContent);
     }
 
     private async processFailedMessage({ id, retryCount }: ScheduledMessageDetails): Promise<void> {

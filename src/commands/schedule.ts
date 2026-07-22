@@ -1,5 +1,5 @@
 import { PollService } from '../services/poll.service';
-import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { CacheType, ChatInputCommandInteraction, SharedSlashCommand, SlashCommandBuilder } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
@@ -8,7 +8,7 @@ import { ScheduleService } from '../scheduling/schedule-service';
 const log = makeLogger(module);
 
 export class ScheduleCommand implements Command {
-    public readonly data: SlashCommandBuilder;
+    public readonly data: SharedSlashCommand;
 
     constructor(
         private readonly partyScheduler: PollService,
