@@ -4,24 +4,25 @@ networks:
         external: false
 
 services:
-    # Local PostgreSQL database - comment out this service if using remote Neon database
     db:
         container_name: gm-sidekick-db
         image: postgres:17
         restart: unless-stopped
         volumes:
-            - postgres-data:/var/lib/postgresql/data
-            - ./init:/docker-entrypoint-initdb.d
+            - ./.data/postgres:/var/lib/postgresql/data
         ports:
-            - 5432:5432
+            - 55432:5432
         networks:
             - haagen-net
         environment:
-            # NOTE: POSTGRES_DB/USER/PASSWORD should match values in app container
-            POSTGRES_DB: postgres
+            POSTGRES_DB: gm_sidekick
             POSTGRES_PASSWORD: password
             POSTGRES_USER: root
-            PGOPTIONS: '--client-min-messages=warning' # ignore errors if the dbs have already been created
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U root -d gm_sidekick']
+            interval: 5s
+            timeout: 5s
+            retries: 5
 
     app:
         container_name: gm-sidekick-app
@@ -29,13 +30,10 @@ services:
             context: .
             dockerfile: Dockerfile
         restart: unless-stopped
-        # Remove depends_on if using remote Neon database
-        # depends_on:
-        #     - db
+        depends_on:
+            db:
+                condition: service_healthy
         networks:
             - haagen-net
         env_file:
             - .docker.env
-
-volumes:
-    postgres-data:
