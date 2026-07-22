@@ -17,7 +17,7 @@
 - **Exact versions only.** No `^` or `~` ranges anywhere in `package.json`.
 - **Formatting:** tab width 4, single quotes, print width 120, trailing commas on all multi-line constructs.
 - **Database is Postgres everywhere** — production, local development, and tests. No SQLite.
-- **Commits follow Conventional Commits:** `<type>(<scope>): <description>`, types `feat|fix|chore|test|docs|refactor|style|perf|build|ci`.
+- **Commits follow Conventional Commits:** `<type>(<scope>): <description>`, types `feat|fix|chore|test|docs|refactor|style|perf|build|ci`. The scope is **optional**, matching ctm's convention.
 - **Never use `any`.** Where a type is not statically known, use a runtime type guard rather than a cast.
 - **Explicit return types** on every exported function.
 - **Do not commit secrets.** `.env` and `.docker.env` stay gitignored.
@@ -308,7 +308,15 @@ The old `prettier`, `build_`, `test:dropdb`, `database:init`, and `database:init
 - [ ] **Step 5: Format the whole repo**
 
 Run: `pnpm format`
-Expected: files are rewritten. The diff should be whitespace-only — oxfmt's settings match the old prettier config (tabWidth 4, singleQuote, printWidth 120), so churn should be minimal. Skim the diff to confirm no logic changed.
+Expected: roughly 35 files rewritten.
+
+The diff will **not** be whitespace-only. oxfmt matches the old prettier config on tabWidth, singleQuote, and printWidth, but the old config also set `arrowParens: 'avoid'` and oxfmt follows the prettier-3 default of `always`. Expect three kinds of change repo-wide:
+
+- trailing commas added to multi-line parameter and argument lists
+- `x => ...` rewritten as `(x) => ...`
+- constructor parameter lists split across lines
+
+All three are semantically inert. Verify that with `git diff -w` — what survives whitespace-ignoring should be only the above. Anything else (a changed operator, string literal, argument order, or bracket placement) is a real change and must be investigated before committing.
 
 - [ ] **Step 6: Run the linter**
 
