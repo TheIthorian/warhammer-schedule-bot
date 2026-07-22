@@ -7,10 +7,9 @@ export default defineConfig({
         globals: true,
         setupFiles: ['./vitest.setup.ts'],
         pool: 'forks',
-        poolOptions: {
-            forks: {
-                singleFork: true,
-            },
-        },
+        // These are integration tests sharing one Postgres instance, so test
+        // files must not run in parallel. In Vitest 4 this is fileParallelism;
+        // the older poolOptions.forks.singleFork is silently ignored.
+        fileParallelism: false,
     },
 });

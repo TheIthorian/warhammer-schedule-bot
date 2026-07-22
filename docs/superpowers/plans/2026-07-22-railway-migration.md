@@ -571,16 +571,14 @@ export default defineConfig({
         globals: true,
         setupFiles: ['./vitest.setup.ts'],
         pool: 'forks',
-        poolOptions: {
-            forks: {
-                singleFork: true,
-            },
-        },
+        fileParallelism: false,
     },
 });
 ```
 
-`singleFork` matters: these are integration tests sharing one database, so parallel files would race on the same tables.
+`fileParallelism: false` matters: these are integration tests sharing one database, so parallel files would race on the same tables.
+
+**Do not write `poolOptions: { forks: { singleFork: true } }`** — that is the Vitest 2/3 spelling. Vitest 4 removed it, and an unknown key is ignored silently rather than erroring, so the suites would run in parallel against one database while appearing correctly configured.
 
 - [ ] **Step 4: Create `vitest.setup.ts`**
 
