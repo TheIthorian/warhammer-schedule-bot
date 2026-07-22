@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`AsciiPollResultsFormatter format method returns a formatted string of the results 1`] = `
+exports[`AsciiPollResultsFormatter > format method returns a formatted string of the results 1`] = `
 "\`\`\`md
 (2)	Tuesday  	|████████████████████|
 (1)	Monday   	|██████████          |
@@ -11,7 +11,7 @@ exports[`AsciiPollResultsFormatter format method returns a formatted string of t
 (0)	Thursday 	|                    |\`\`\`"
 `;
 
-exports[`AsciiPollResultsFormatter format method returns a formatted string of the results for non-max response 1`] = `
+exports[`AsciiPollResultsFormatter > format method returns a formatted string of the results for non-max response 1`] = `
 "\`\`\`md
 (1)	Monday   	|██████████          |
 (1)	Tuesday  	|██████████          |

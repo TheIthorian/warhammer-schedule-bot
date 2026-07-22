@@ -9,6 +9,12 @@ describe('GuildConnectionService', () => {
         await prisma.guildConnection.deleteMany({ where: { id: { in: guildConnectionIds } } });
     });
 
+    // Without this the records created by the last test survive the run and the
+    // unique constraint on guildId makes the next run fail.
+    afterAll(async () => {
+        await prisma.guildConnection.deleteMany({ where: { id: { in: guildConnectionIds } } });
+    });
+
     describe('createGuildConnection', () => {
         it('creates a guild connection successfully', async () => {
             const guildId = 'guild123';

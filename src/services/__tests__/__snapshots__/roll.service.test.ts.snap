@@ -1,10 +1,10 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`RollService formatValues should format values correctly 1`] = `
+exports[`RollService > formatValues > should format values correctly 1`] = `
 "## 1
 ## 2
 ## 2
 sum: 5; average: 1.7"
 `;
 
-exports[`RollService formatValues should handle single value and omit average in formatting 1`] = `"## 5"`;
+exports[`RollService > formatValues > should handle single value and omit average in formatting 1`] = `"## 5"`;
