@@ -172,8 +172,8 @@ The `dependencies` and `devDependencies` blocks become exactly:
         "@types/node": "24.13.3",
         "@types/node-schedule": "2.1.3",
         "@types/pg": "8.15.6",
-        "oxfmt": "0.60.0",
-        "oxlint": "1.75.0",
+        "oxfmt": "0.59.0",
+        "oxlint": "1.74.0",
         "prisma": "6.19.3",
         "tsx": "4.23.1",
         "typescript": "6.0.3",
@@ -182,6 +182,23 @@ The `dependencies` and `devDependencies` blocks become exactly:
 ```
 
 Note what moved: `pino-pretty` stays a runtime dependency (the `dev` script pipes through it). `ts-node` is gone entirely — `tsx` replaces it for the dev entry point and the two scripts in `src/scripts/`.
+
+**On version choice:** every pin above is at least a week old. pnpm 11 defaults `minimumReleaseAge` to 24 hours as a supply-chain defense, and packages inside that window will be refused. Do not add a `minimumReleaseAgeExclude` to get around it — pick the newest release that is already outside the window instead. `oxlint@1.74.0` and `oxfmt@0.59.0` are chosen for exactly this reason.
+
+- [ ] **Step 3a: Create `pnpm-workspace.yaml`**
+
+pnpm 11 requires explicit approval for packages with install scripts, or `pnpm install` fails with `ERR_PNPM_IGNORED_BUILDS`:
+
+```yaml
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+  unrs-resolver: true
+```
+
+This file exists from Task 2 onward — later tasks should not be surprised by it.
 
 - [ ] **Step 4: Reinstall**
 
