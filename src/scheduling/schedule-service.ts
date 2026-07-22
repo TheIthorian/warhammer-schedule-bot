@@ -84,20 +84,20 @@ export class ScheduleService {
         channelId: string;
         guildConnectionId: number;
     }): Promise<void> {
+        await this.pollService.addPollAnswer(input.guildConnectionId, {
+            userId: input.userId,
+            days: input.answer,
+            username: input.username,
+        });
+
         const channel = this.discordClient.channels.cache.get(input.channelId);
 
         if (!channel) {
-            log.error({ channelId: input.channelId }, 'Channel not found in cache');
+            log.error({ channelId: input.channelId }, 'Channel not found in cache - cannot send thread notification');
             return;
         }
 
         if (channel.isTextBased()) {
-            await this.pollService.addPollAnswer(input.guildConnectionId, {
-                userId: input.userId,
-                days: input.answer,
-                username: input.username,
-            });
-
             const inProgressPoll = await this.pollService.getInProgressPoll(input.guildConnectionId);
             const messageId = inProgressPoll[0].messageId;
             const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));

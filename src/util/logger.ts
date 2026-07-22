@@ -43,7 +43,7 @@ export function logContext(
     functionName: string,
     dataObject: Record<string, string | null | number | Date | undefined> = {},
     log?: Logger,
-) {
+): string {
     const objectString = Object.entries(dataObject)
         .map(([key, value]) => `[${key} : ${value?.toString()}]`)
         .join(', ');
