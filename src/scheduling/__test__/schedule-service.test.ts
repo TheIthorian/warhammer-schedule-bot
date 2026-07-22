@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker';
 import { vi } from 'vitest';
 import { Channel, Client, Message } from 'discord.js';
 import prisma from '../../primsaClient';
+import { randomUUID } from 'crypto';
 
 const mockDiscordClient = { channels: { cache: new Map<string, Channel>(), fetch: vi.fn() } };
 const mockChannel = {
@@ -21,7 +22,9 @@ const mockMessage = {
 describe('ScheduleService', () => {
     let guildConnection: Awaited<ReturnType<typeof guildConnectionService.createGuildConnection>>;
 
-    const guildId = faker.string.numeric();
+    // faker.string.numeric() defaults to a single digit, so guildId collided with rows left
+    // behind by earlier runs and the whole suite failed in beforeAll on the unique constraint.
+    const guildId = randomUUID();
     const channelId = faker.string.numeric();
     const userId = faker.string.numeric();
     const connectionUserId = faker.string.numeric();
@@ -39,6 +42,10 @@ describe('ScheduleService', () => {
 
     afterEach(() => {
         vi.clearAllMocks();
+    });
+
+    afterAll(async () => {
+        await prisma.guildConnection.deleteMany({ where: { id: guildConnection.id } });
     });
 
     describe('validatePollInProgress', () => {
@@ -195,6 +202,35 @@ describe('ScheduleService', () => {
 
             expect(mockMessage.startThread).not.toHaveBeenCalled();
             expect(mockMessage.thread.send).toHaveBeenCalledWith(`${username} selected Monday, Tuesday`);
+        });
+
+        // Regression test for 46f779f: the cache-miss guard used to sit above addPollAnswer, so a
+        // channel cache miss silently discarded the answer while the user was still told it landed.
+        it('persists the poll answer even when the channel is not cached', async () => {
+            mockDiscordClient.channels.cache.delete(channelId);
+
+            await scheduleService.addPollResponse({
+                userId,
+                username,
+                answer: ['Monday', 'Tuesday'],
+                channelId,
+                guildConnectionId: guildConnection.id,
+            });
+
+            expect(
+                await prisma.pollAnswer.findMany({ where: { guildConnectionId: guildConnection.id } }),
+            ).toStrictEqual([
+                {
+                    answer: 'Monday,Tuesday',
+                    answeredDate: expect.any(Date),
+                    guildConnectionId: guildConnection.id,
+                    userId,
+                    username,
+                    pollId,
+                },
+            ]);
+            expect(mockMessage.thread.send).not.toHaveBeenCalled();
+            expect(mockMessage.startThread).not.toHaveBeenCalled();
         });
 
         it('adds poll answers', async () => {

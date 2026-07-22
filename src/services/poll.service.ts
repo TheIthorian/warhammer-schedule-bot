@@ -2,6 +2,7 @@ import { ScheduleResponse, ScheduleResponseWithUsername } from '../scheduling/ty
 import { logContext, makeLogger } from '../util/logger';
 import prisma from '../primsaClient';
 import { DayOfTheWeek } from '../constants';
+import { Poll } from '@prisma/client';
 
 const log = makeLogger(module);
 
@@ -44,14 +45,35 @@ export class PollService {
     }
 
     public async getInProgressPoll(guildConnectionId: number): Promise<PollDetails[]> {
-        return await prisma.$queryRaw`SELECT P.id as pollId, 
-            P.guildConnectionId, P.status, P.messageId, P.messageUrl, P.channelId,
-            PA.userId, PA.answer, PA.username
-        FROM Poll P
-        LEFT JOIN PollAnswer PA ON PA.pollId = P.id
-        WHERE P.guildConnectionId = ${guildConnectionId}
-        AND P.status = 'inProgress'
-        ORDER BY P.id, PA.answeredDate asc`;
+        const polls = await prisma.poll.findMany({
+            where: { guildConnectionId, status: 'inProgress' },
+            include: { PollAnswers: { orderBy: { answeredDate: 'asc' } } },
+            orderBy: { id: 'asc' },
+        });
+
+        // Flattened to one row per answer to preserve the shape callers were written against.
+        // A poll with no answers still yields a single row (the previous LEFT JOIN behaviour).
+        return polls.flatMap((poll) => {
+            const pollFields = {
+                pollId: poll.id,
+                guildConnectionId: poll.guildConnectionId,
+                status: poll.status,
+                messageId: poll.messageId,
+                messageUrl: poll.messageUrl,
+                channelId: poll.channelId,
+            };
+
+            if (!poll.PollAnswers.length) {
+                return [pollFields];
+            }
+
+            return poll.PollAnswers.map((pollAnswer) => ({
+                ...pollFields,
+                userId: pollAnswer.userId,
+                username: pollAnswer.username ?? undefined,
+                answer: pollAnswer.answer,
+            }));
+        });
     }
 
     public async cancelPoll(guildConnectionId: number): Promise<void> {
@@ -62,32 +84,37 @@ export class PollService {
     }
 
     public async closePoll(guildConnectionId: number): Promise<Map<string, ScheduleResponse>> {
-        type PollWithAnswers = {
-            pollId: number;
-            channelId: string;
-            status: string;
-            answer: string;
-            userId: string;
-            username: string;
-        };
-        const pollWithAnswers = await prisma.$queryRaw<PollWithAnswers[]>`SELECT P.id as pollId, P.channelId, P.status, 
-            PA.answer, PA.userId, PA.username
-        FROM Poll P
-        JOIN PollAnswer PA ON PA.pollId = P.id
-        WHERE P.guildConnectionId = ${guildConnectionId}
-        AND P.status = 'inProgress'`;
+        const ctx = logContext(`${PollService.name}.${this.closePoll.name}`, { guildConnectionId }, log);
 
-        await prisma.$executeRaw`UPDATE Poll SET status = 'closed' WHERE id = ${pollWithAnswers[0].pollId}`;
+        const poll = await prisma.poll.findFirst({
+            where: { guildConnectionId, status: 'inProgress' },
+            include: { PollAnswers: { orderBy: { answeredDate: 'asc' } } },
+            orderBy: { id: 'asc' },
+        });
 
         const responsesByUser = new Map<string, ScheduleResponse>();
-        for (const { userId, answer } of pollWithAnswers) {
-            responsesByUser.set(userId, { days: answer.split(',') as DayOfTheWeek[], userId: userId });
+
+        if (!poll) {
+            log.warn(`${ctx} No poll is in progress - nothing to close`);
+            return responsesByUser;
+        }
+
+        await prisma.poll.update({ data: { status: 'closed' }, where: { id: poll.id } });
+
+        for (const { userId, answer } of poll.PollAnswers) {
+            responsesByUser.set(userId, { days: answer.split(',') as DayOfTheWeek[], userId });
         }
 
         return responsesByUser;
     }
 
-    public async createPoll({ messageId, messageUrl, channelId, userId, guildConnectionId }: CreatePollInput) {
+    public async createPoll({
+        messageId,
+        messageUrl,
+        channelId,
+        userId,
+        guildConnectionId,
+    }: CreatePollInput): Promise<Poll> {
         const ctx = logContext(
             `${PollService.name}.${this.createPoll.name}`,
             { guildConnectionId, messageId, userId, channelId },
