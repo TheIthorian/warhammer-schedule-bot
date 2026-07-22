@@ -886,9 +886,9 @@ FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY prisma ./prisma/
-RUN pnpm install --frozen-lockfile --prod && pnpm exec prisma generate && pnpm store prune
+RUN pnpm install --frozen-lockfile --prod --no-optional && pnpm exec prisma generate && pnpm store prune
 
 COPY --from=builder /app/dist ./dist
 COPY assets ./assets
@@ -902,6 +902,12 @@ CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node dist/index.js"]
 ```
 
 Note that `prisma generate` runs again in the runner stage rather than copying the generated client across — the client contains platform-specific query engine binaries, and regenerating is more reliable than copying.
+
+**`prisma` must be in `dependencies`, not `devDependencies`.** Prisma's convention keeps the CLI dev-only, which assumes migrations run from CI or a developer machine. This container runs `prisma migrate deploy` itself on every boot, so the CLI is a genuine runtime dependency. Leaving it in `devDependencies` forces a second, non-frozen install in the runner stage, which ships an artifact whose dependency graph was re-resolved rather than lockfile-pinned, and duplicates ~156MB of Prisma.
+
+**`--no-optional` is load-bearing.** `typescript` is an optional peer of `prisma` and `@prisma/client`. Without the flag, pnpm materialises it (~24MB) in the runtime image even under `--prod`, because the lockfile's peer-resolution key was baked in while devDependencies were present. Verify with `docker run --rm <image> ls node_modules/.pnpm | grep -i typescript` — checking top-level `node_modules` is not sufficient, since pnpm stores packages in the virtual store.
+
+Measured result: 480MB, and the image's `pnpm-lock.yaml` hashes identically to the committed one.
 
 - [ ] **Step 5: Delete the old healthcheck script**
 
