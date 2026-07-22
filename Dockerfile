@@ -33,25 +33,21 @@ USER node
 
 COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --chown=node:node prisma ./prisma/
-# The `prisma` CLI is a devDependency (only @prisma/client ships to production
-# per Prisma's own convention), but `prisma migrate deploy`/`generate` must run
-# in this container at start-up. Trim the in-image package.json down to just
-# that one devDependency (the tracked repo file is untouched) before a second,
-# non-frozen install, so pnpm links in the pinned `prisma` CLI from the lockfile
-# without pulling in vitest/oxlint/typescript/tsx/@faker-js alongside it.
-# Everything runs in a single layer so `pnpm store prune` actually shrinks the
-# image instead of leaving the earlier install's store cache sitting in a
-# lower layer that a later layer can only hide, not remove.
-RUN pnpm install --frozen-lockfile --prod \
-    && node -e "\
-    const fs = require('fs'); \
-    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); \
-    pkg.devDependencies = { prisma: pkg.devDependencies.prisma }; \
-    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2)); \
-    " \
-    && pnpm install --frozen-lockfile=false \
-    && pnpm exec prisma generate \
-    && pnpm store prune
+# `prisma` lives in `dependencies`, not `devDependencies`, even though Prisma's
+# own convention says the CLI is dev-only (only @prisma/client ships to
+# production). That convention assumes migrations run from CI or a developer
+# machine; here the container runs `prisma migrate deploy` itself at every
+# boot, so the CLI is a genuine runtime dependency. Keeping it there lets a
+# single frozen, --prod install pull in exactly what's needed.
+# --no-optional matters here: `typescript` is an optional peer of prisma/
+# @prisma-client (used only to type its generated client), and it stays a
+# devDependency of this project. Under `--frozen-lockfile --prod` alone, pnpm
+# still materializes that optional peer in full (a ~24MB package) because the
+# lockfile's peer-resolution key for `prisma` was baked in when the top-level
+# lockfile was generated with devDependencies present. `--no-optional` is what
+# actually excludes it from this install; without it typescript ships despite
+# being "prod"-filtered out.
+RUN pnpm install --frozen-lockfile --prod --no-optional && pnpm exec prisma generate && pnpm store prune
 
 COPY --from=builder --chown=node:node /app/dist ./dist
 COPY --chown=node:node assets ./assets
