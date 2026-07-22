@@ -10,6 +10,7 @@ import { makeLogger } from './util/logger';
 import { ScheduledMessageProcessor } from './scheduling';
 import { client } from './discord-client';
 import { guildConnectionService } from './services/guild-connection.service';
+import { registerCommands } from './commands/register';
 import http from 'http';
 
 const log = makeLogger(module);
@@ -43,6 +44,13 @@ export async function start(): Promise<void> {
 
         if (!guildId) {
             log.info('Ignoring interaction outside of a guild');
+            return;
+        }
+
+        // Answered before the guild-connection lookup below: Discord drops the suggestions if we take longer than
+        // 3 seconds, and an autocomplete keystroke should not be doing database writes.
+        if (interaction.isAutocomplete()) {
+            await commandInteractionRouter.handleAutocomplete(interaction);
             return;
         }
 
@@ -80,6 +88,13 @@ export async function start(): Promise<void> {
             log.error(error, 'Error handling message reaction');
         }
     });
+
+    // Registered on every boot so a deploy that adds or changes a command takes effect without a manual step.
+    // Deliberately not fatal: a registration failure leaves the previously registered commands in place, which is
+    // better than refusing to start and losing scheduled messages.
+    await registerCommands().catch((error) =>
+        log.error(error, 'Failed to register application commands - continuing with the previously registered set'),
+    );
 
     client.login(config.botToken).catch((error: unknown) => {
         log.fatal(error, 'Failed to log in to Discord - exiting');

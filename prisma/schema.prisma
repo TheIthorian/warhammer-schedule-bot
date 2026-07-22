@@ -25,6 +25,18 @@ model GuildConnection {
     @@index([connectionUserId])
 }
 
+model UserTimezone {
+    id     Int    @id @default(autoincrement())
+    userId String @unique
+
+    // IANA zone name, e.g. "Europe/London". Validated against moment-timezone before it is written.
+    timezone String
+
+    updatedAt DateTime @updatedAt
+
+    @@index([userId])
+}
+
 model Poll {
     id                Int @id @default(autoincrement())
     guildConnectionId Int
