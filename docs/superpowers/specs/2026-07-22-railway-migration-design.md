@@ -121,9 +121,13 @@ Postgres runs everywhere. `docker compose up db` provides it locally and for tes
 
 Bump to clear all advisories:
 
-- `discord.js` → latest 14.x (resolves the `undici` and `ws` chains — 20 of the 25 advisories)
-- `prisma` / `@prisma/client` / `@prisma/adapter-pg` → latest 6.x, kept in lockstep
-- `pino` / `pino-pretty` → latest
+- `discord.js` → `14.27.0` (resolves the `undici` and `ws` chains — 20 of the 25 advisories)
+- `prisma` / `@prisma/client` / `@prisma/adapter-pg` → `6.19.3` first, then `7.9.0` as a separate final step (see
+  below), kept in lockstep
+- `pino` → `10.3.1`, `pino-pretty` → `13.1.3`
+- `typescript` → `6.0.3`, matching ctm
+
+Full pinned set is listed in Task 2 of the implementation plan.
 
 Remove: `tsc`, `babel`, `@types/moment`, `@types/pino`, `eslint-config-next`, `eslint`, `prettier`, `jest`,
 `ts-jest`, `babel-jest`, `@babel/*`, `@types/jest`.
@@ -131,6 +135,25 @@ Remove: `tsc`, `babel`, `@types/moment`, `@types/pino`, `eslint-config-next`, `e
 Move to `devDependencies`: `ts-node` (dev entry point only; prod runs compiled JS).
 
 **Exit criterion:** `pnpm audit` reports zero vulnerabilities.
+
+### 6a. Prisma 7 and the ESM conversion
+
+Prisma 7 lands **last**, after the Railway deployment is verified working on 6.19.3, as an isolated commit that can be
+reverted without disturbing the migration.
+
+It is not a version bump. Prisma 7 requires:
+
+- `"type": "module"` — the project becomes ESM
+- the `prisma-client-js` generator replaced by `prisma-client`, with a mandatory `output` path
+- the client imported from that output path rather than `@prisma/client`
+- `prisma.config.ts` replacing schema-embedded CLI configuration
+- explicit `dotenv` loading; environment variables no longer load automatically
+- a driver adapter for all databases
+
+Three of those are already satisfied here: `@prisma/adapter-pg` is in use, there are no `require()` calls, and only
+two files import `@prisma/client`. The cost is the ESM conversion itself — **130 extensionless relative imports
+across 43 files** must gain explicit `.js` extensions. That is mechanical, scriptable, and fully verified by `tsc`,
+but it touches nearly every source file, which is why it is sequenced last.
 
 ### 7. Dockerfile
 
@@ -154,6 +177,9 @@ runner    node:24-alpine, NODE_ENV=production, prod deps + dist/ + prisma/ + gen
 
 - `docker-compose.yml` keeps the `db` service; `depends_on: db` is uncommented on `app` now that the remote-Neon
   comments are obsolete.
+- **Host bind mounts replace named volumes.** The `postgres-data` named volume becomes a bind mount to
+  `./.data/postgres`, so the database files are visible on the host and survive `docker compose down -v`. `.data/` is
+  gitignored. The `volumes:` top-level block is removed.
 - `README.MD` rewritten: Railway replaces the DigitalOcean deploy section, pnpm replaces npm, and the stale
   `DATABASE_URL="file:./dev.db"` SQLite examples are corrected to Postgres.
 - `prisma/dev.db` (a stale 57k SQLite file from 2023) and the committed `.DS_Store` are deleted.
