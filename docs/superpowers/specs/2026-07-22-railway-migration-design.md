@@ -92,7 +92,32 @@ Tests already require a real Postgres (`npm test` sets a `DATABASE_URL` pointing
 ctm's "integration tests use the real DB" rule. `docker compose up db` provides it; the test script is rewritten to
 stop deleting a SQLite file that no longer exists.
 
-### 5. Dependencies
+### 5. Migration history reset
+
+The existing migration history is broken and cannot be deployed as-is:
+
+- `prisma/migrations/migration_lock.toml` records `provider = "sqlite"` while `schema.prisma` declares
+  `postgresql`. Prisma aborts on this mismatch.
+- `prisma/migrations/20260131154044_init/` is empty — it contains no `migration.sql`.
+- Two of the older migrations contain `AUTOINCREMENT`, which is SQLite syntax.
+
+Because the database is being recreated empty, all four `_init` migrations are deleted and replaced with a single
+fresh Postgres migration generated from the current `schema.prisma`, with `migration_lock.toml` recording
+`postgresql`.
+
+**SQLite is not retained for local or test use.** It was considered and rejected:
+
+- Prisma supports one provider per datasource; `migration_lock.toml` pins it. Supporting both means two migration
+  histories maintained by hand, which will drift.
+- `@prisma/adapter-pg` is a Postgres driver adapter, so tests on SQLite would exercise a different code path than
+  production.
+- SQLite has no native `DateTime` type — dates are stored as integers or strings with different timezone and
+  comparison semantics. This is a scheduling bot: `scheduledDate`, `answeredDate`, and reminder windows are the core
+  domain. SQLite-backed tests could pass while production misfires, which is the worst available failure mode.
+
+Postgres runs everywhere. `docker compose up db` provides it locally and for tests.
+
+### 6. Dependencies
 
 Bump to clear all advisories:
 
@@ -107,7 +132,7 @@ Move to `devDependencies`: `ts-node` (dev entry point only; prod runs compiled J
 
 **Exit criterion:** `pnpm audit` reports zero vulnerabilities.
 
-### 6. Dockerfile
+### 7. Dockerfile
 
 Multi-stage, following ctm's base → installer → builder → runner shape, minus the Turborepo prune stages:
 
@@ -125,7 +150,7 @@ runner    node:24-alpine, NODE_ENV=production, prod deps + dist/ + prisma/ + gen
   plus `node-schedule` do runtime resolution that bundlers mishandle. ctm uses `tsc -p tsconfig.build.json` for the
   same reason.
 
-### 7. Local development
+### 8. Local development
 
 - `docker-compose.yml` keeps the `db` service; `depends_on: db` is uncommented on `app` now that the remote-Neon
   comments are obsolete.
