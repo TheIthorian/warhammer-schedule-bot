@@ -1,5 +1,4 @@
 node_modules
-build
 .env
 .docker.env
 app.log
@@ -7,3 +6,6 @@ app.prod.yaml
 project/
 *.db
 *.db-journal
+.DS_Store
+.data/
+dist/
