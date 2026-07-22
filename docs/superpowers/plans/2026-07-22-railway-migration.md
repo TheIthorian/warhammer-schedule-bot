@@ -8,8 +8,6 @@
 
 **Tech Stack:** Node 24 · pnpm 11 · TypeScript 6 · Prisma 6 (Postgres) · discord.js 14 · vitest · oxlint + oxfmt · Docker (Alpine, multi-stage) · Railway
 
-**Spec:** `docs/superpowers/specs/2026-07-22-railway-migration-design.md`
-
 ## Global Constraints
 
 - **Node** `>=24.0.0`. `.nvmrc` pins `24.4.0`. Docker images use `node:24-alpine`.
