@@ -41,6 +41,8 @@ Dead weight found in `package.json`:
 - Remaining secrets set as Railway service variables: `BOT_TOKEN`, `APPLICATION_ID`, `PUBLIC_KEY`, `CLIENT_ID`,
   `CLIENT_SECRET`, `AI_SERVICE_URL`, `AI_SERVICE_API_KEY`, `ADMIN_USERS`.
 - `railway.json` committed at the repo root: `DOCKERFILE` builder, healthcheck path `/`, restart policy `ON_FAILURE`.
+- **The Railway database starts empty.** App data (scheduling, bookings) is ephemeral and can be recreated, so
+  nothing is migrated from DigitalOcean. `migrate deploy` builds the schema from scratch on first boot.
 - Deploys trigger on push to `master` — Railway watches the repo directly. No container registry in the loop.
 
 **Files deleted:** `.github/workflows/deploy.yml`, `app.yaml`, `app.prod.yaml.example`, `.gcloudignore`,
@@ -146,7 +148,6 @@ runner    node:24-alpine, NODE_ENV=production, prod deps + dist/ + prisma/ + gen
 | Strict TypeScript surfaces more than 18 errors once `include` widens | Fix them; if the count is unexpectedly large, split into its own commit |
 | Vitest snapshot format differs from jest                             | Regenerate snapshots, review the diff rather than accepting blind       |
 | Migration history has four `_init` migrations                        | Verify `migrate deploy` applies cleanly against a fresh Railway DB      |
-| Data in the DigitalOcean database                                    | Confirm whether any prod data needs migrating before tearing DO down    |
 
 ## Verification
 
