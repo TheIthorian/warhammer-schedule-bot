@@ -15,7 +15,7 @@ import http from 'http';
 const log = makeLogger(module);
 
 export async function start(): Promise<void> {
-    const port = process.env.HEALTH_PORT || 8080;
+    const port = process.env['PORT'] ?? process.env['HEALTH_PORT'] ?? 8080;
     http.createServer((_req, res) => {
         log.debug('received health request');
         res.writeHead(200);
