@@ -30,6 +30,11 @@ services:
             context: .
             dockerfile: Dockerfile
         restart: unless-stopped
+        # Published so the health endpoint is reachable from the host during
+        # local development. Railway routes to the container's PORT directly
+        # and ignores this.
+        ports:
+            - 8080:8080
         depends_on:
             db:
                 condition: service_healthy

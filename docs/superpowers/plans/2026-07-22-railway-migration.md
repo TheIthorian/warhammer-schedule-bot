@@ -599,7 +599,7 @@ DATABASE_URL="postgresql://root:password@localhost:55432/gm_sidekick?schema=publ
 NODE_ENV=test
 ```
 
-Add `.env.test` to `.gitignore`, and create `.env.test.example` with the same content — it holds no real secrets, but keeping the pattern consistent avoids surprises later.
+Add `.env.test` to `.gitignore`, and create `.env.test.example` with the same content (using host port 55432) — it holds no real secrets, but keeping the pattern consistent avoids surprises later.
 
 - [ ] **Step 6: Run the suite and triage**
 
@@ -1005,6 +1005,8 @@ services:
             context: .
             dockerfile: Dockerfile
         restart: unless-stopped
+        ports:
+            - 8080:8080
         depends_on:
             db:
                 condition: service_healthy
