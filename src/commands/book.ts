@@ -1,5 +1,5 @@
 import { ReminderService } from '../services/reminder.service';
-import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder, time } from 'discord.js';
+import { CacheType, ChatInputCommandInteraction, SharedSlashCommand, SlashCommandBuilder, time } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
@@ -7,22 +7,28 @@ import { logContext, makeLogger } from '../util/logger';
 const log = makeLogger(module);
 
 export class BookCommand implements Command {
-    public readonly data: SlashCommandBuilder;
+    public readonly data: SharedSlashCommand;
 
     constructor(private readonly reminderService: ReminderService) {
         this.data = new SlashCommandBuilder()
             .setName('book')
             .setDescription('Book the next session')
-            .addStringOption(option =>
-                option.setName('date').setDescription('Date of the session to book').setRequired(true)
-            )
-            .setName('book'); // casts type back to slash command builder
+            .addStringOption((option) =>
+                option.setName('date').setDescription('Date of the session to book').setRequired(true),
+            );
     }
 
     async execute(interaction: ChatInputCommandInteraction<CacheType>, guildConnectionId: number): Promise<void> {
         const ctx = logContext(`${BookCommand.name}.${this.execute.name}`, getInteractionLogDetails(interaction), log);
 
         const inputDateString = interaction.options.getString('date');
+
+        if (inputDateString === null) {
+            log.error(`${ctx} required 'date' option was missing from the interaction`);
+            await interaction.reply({ content: 'Please provide a date.', ephemeral: true });
+            return;
+        }
+
         const response = this.reminderService.getDateAndResponseFromCommandInput(inputDateString);
 
         if (response.isSuccess === false) {

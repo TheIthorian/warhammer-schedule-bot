@@ -13,8 +13,8 @@ describe('PartyScheduler', () => {
     const userId1 = randomUUID();
     const userId2 = randomUUID();
 
-    const username1 = faker.internet.userName();
-    const username2 = faker.internet.userName();
+    const username1 = faker.internet.username();
+    const username2 = faker.internet.username();
 
     const partyScheduler = new PollService();
 
@@ -181,6 +181,24 @@ describe('PartyScheduler', () => {
 
             expect(pollResults.get(userId1)).toStrictEqual({ days: ['Monday', 'Tuesday'], userId: userId1 });
             expect(pollResults.get(userId2)).toStrictEqual({ days: ['Tuesday'], userId: userId2 });
+
+            expect(await prisma.poll.findFirst({ select: { status: true }, where: { id: poll1.id } })).toStrictEqual({
+                status: 'closed',
+            });
+        });
+
+        test('should close the poll and return no responses when it has no answers', async () => {
+            const poll1 = await createPoll(userId1);
+
+            expect(await partyScheduler.closePoll(guildConnection.id)).toStrictEqual(new Map());
+
+            expect(await prisma.poll.findFirst({ select: { status: true }, where: { id: poll1.id } })).toStrictEqual({
+                status: 'closed',
+            });
+        });
+
+        test('should return no responses when no poll is in progress', async () => {
+            expect(await partyScheduler.closePoll(guildConnection.id)).toStrictEqual(new Map());
         });
     });
 
@@ -221,7 +239,7 @@ describe('PartyScheduler', () => {
                     channelId,
                     userId: userId1,
                     guildConnectionId: guildConnection.id,
-                })
+                }),
             ).rejects.toThrow('A poll is already in progress');
         });
     });

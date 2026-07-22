@@ -9,12 +9,12 @@ const log = makeLogger(module);
 export class MessageReactRemoveHandler {
     async execute(
         interaction: MessageReaction | PartialMessageReaction,
-        reactionUser: User | PartialUser
+        reactionUser: User | PartialUser,
     ): Promise<void> {
         const ctx = logContext(
             `${MessageReactRemoveHandler.name}.${this.execute.name}`,
             { user: reactionUser.username, messageId: interaction.message.id },
-            log
+            log,
         );
 
         const isReactionUserAdmin = isUserAdmin(reactionUser);
@@ -27,11 +27,11 @@ export class MessageReactRemoveHandler {
             log.info(`${ctx} message contains up emoji reaction. Removing all bot reactions.`);
 
             const message = await interaction.message.fetch();
-            const reactionsByBot = message.reactions.cache.filter(reaction =>
-                reaction.users.cache.has(config.discordBotUserId)
+            const reactionsByBot = message.reactions.cache.filter((reaction) =>
+                reaction.users.cache.has(config.discordBotUserId),
             );
 
-            await Promise.all(reactionsByBot.map(reaction => reaction.users.remove()));
+            await Promise.all(reactionsByBot.map((reaction) => reaction.users.remove()));
         }
     }
 }

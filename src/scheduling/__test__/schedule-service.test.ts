@@ -2,29 +2,33 @@ import { pollService } from '../../services/poll.service';
 import { ScheduleService } from '../schedule-service';
 import { guildConnectionService } from '../../services/guild-connection.service';
 import { faker } from '@faker-js/faker';
+import { vi } from 'vitest';
 import { Channel, Client, Message } from 'discord.js';
 import prisma from '../../primsaClient';
+import { randomUUID } from 'crypto';
 
-const mockDiscordClient = { channels: { cache: new Map<string, Channel>(), fetch: jest.fn() } };
+const mockDiscordClient = { channels: { cache: new Map<string, Channel>(), fetch: vi.fn() } };
 const mockChannel = {
-    messages: { cache: new Map<string, Message<boolean>>(), fetch: jest.fn() },
-    isTextBased: jest.fn(),
+    messages: { cache: new Map<string, Message<boolean>>(), fetch: vi.fn() },
+    isTextBased: vi.fn(),
 };
 const mockMessage = {
-    edit: jest.fn(),
-    startThread: jest.fn(),
+    edit: vi.fn(),
+    startThread: vi.fn(),
     hasThread: false,
-    thread: { send: jest.fn() },
+    thread: { send: vi.fn() },
 };
 
 describe('ScheduleService', () => {
-    let guildConnection;
+    let guildConnection: Awaited<ReturnType<typeof guildConnectionService.createGuildConnection>>;
 
-    const guildId = faker.string.numeric();
+    // faker.string.numeric() defaults to a single digit, so guildId collided with rows left
+    // behind by earlier runs and the whole suite failed in beforeAll on the unique constraint.
+    const guildId = randomUUID();
     const channelId = faker.string.numeric();
     const userId = faker.string.numeric();
     const connectionUserId = faker.string.numeric();
-    const username = faker.internet.userName();
+    const username = faker.internet.username();
 
     const scheduleService = new ScheduleService(pollService, mockDiscordClient as unknown as Client);
 
@@ -37,7 +41,11 @@ describe('ScheduleService', () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
+    });
+
+    afterAll(async () => {
+        await prisma.guildConnection.deleteMany({ where: { id: guildConnection.id } });
     });
 
     describe('validatePollInProgress', () => {
@@ -74,7 +82,7 @@ describe('ScheduleService', () => {
             const message = scheduleService.getSchedulingMessageComponents();
 
             expect(message.content).toStrictEqual(
-                'Hey everyone 👋 Please select the days that you are available next week'
+                'Hey everyone 👋 Please select the days that you are available next week',
             );
 
             expect(message.components[0].toJSON()).toMatchSnapshot();
@@ -196,6 +204,35 @@ describe('ScheduleService', () => {
             expect(mockMessage.thread.send).toHaveBeenCalledWith(`${username} selected Monday, Tuesday`);
         });
 
+        // Regression test for 46f779f: the cache-miss guard used to sit above addPollAnswer, so a
+        // channel cache miss silently discarded the answer while the user was still told it landed.
+        it('persists the poll answer even when the channel is not cached', async () => {
+            mockDiscordClient.channels.cache.delete(channelId);
+
+            await scheduleService.addPollResponse({
+                userId,
+                username,
+                answer: ['Monday', 'Tuesday'],
+                channelId,
+                guildConnectionId: guildConnection.id,
+            });
+
+            expect(
+                await prisma.pollAnswer.findMany({ where: { guildConnectionId: guildConnection.id } }),
+            ).toStrictEqual([
+                {
+                    answer: 'Monday,Tuesday',
+                    answeredDate: expect.any(Date),
+                    guildConnectionId: guildConnection.id,
+                    userId,
+                    username,
+                    pollId,
+                },
+            ]);
+            expect(mockMessage.thread.send).not.toHaveBeenCalled();
+            expect(mockMessage.startThread).not.toHaveBeenCalled();
+        });
+
         it('adds poll answers', async () => {
             mockMessage.hasThread = true;
             await scheduleService.addPollResponse({
@@ -207,7 +244,7 @@ describe('ScheduleService', () => {
             });
 
             expect(
-                await prisma.pollAnswer.findMany({ where: { guildConnectionId: guildConnection.id } })
+                await prisma.pollAnswer.findMany({ where: { guildConnectionId: guildConnection.id } }),
             ).toStrictEqual([
                 {
                     answer: 'Monday,Tuesday',

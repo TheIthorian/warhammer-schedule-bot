@@ -35,7 +35,7 @@ export const config = {
         tokenRevokationUrl: 'https://discord.com/api/oauth2/token/revoke',
     },
 
-    adminUsers: process.env.ADMIN_USERS?.split(',')?.map(id => id.trim()) ?? [],
+    adminUsers: process.env.ADMIN_USERS?.split(',')?.map((id) => id.trim()) ?? [],
 
     discordBotUserId: '', // Assigned at runtime
 };

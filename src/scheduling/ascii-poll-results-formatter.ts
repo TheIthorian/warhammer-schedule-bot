@@ -11,7 +11,7 @@ export class AsciiPollResultsFormatter implements PollResultsFormatter {
         const results = this.getResults(responses);
 
         const totalNumberOfResponses = responses.size;
-        const formattedResultsArray = results.map(result => {
+        const formattedResultsArray = results.map((result) => {
             const fractionOfMax = (GRAPHIC_WIDTH * result.userIds.length) / totalNumberOfResponses;
             const recordString = `(${result.userIds.length})\t${padString(result.day, lengthOfLongestDayName)}\t`;
             const barString = '|' + padString(padString('', fractionOfMax, '█'), GRAPHIC_WIDTH) + '|';
@@ -46,10 +46,15 @@ export function extractResponses(responses: Map<String, ScheduleResponse>): Sche
 }
 
 export function transposeResponses(responses: ScheduleResponse[]): Record<DayOfTheWeek, string[]> {
-    const responsesByDays = DAYS_OF_THE_WEEK.reduce((prev, day) => {
-        prev[day] = [];
-        return prev;
-    }, {}) as Record<DayOfTheWeek, string[]>;
+    const responsesByDays: Record<DayOfTheWeek, string[]> = {
+        Monday: [],
+        Tuesday: [],
+        Wednesday: [],
+        Thursday: [],
+        Friday: [],
+        Saturday: [],
+        Sunday: [],
+    };
 
     for (const response of responses) {
         for (const day of response.days) {

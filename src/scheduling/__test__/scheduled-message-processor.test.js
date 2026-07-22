@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { ScheduledMessageProcessor } from '../scheduled-message-processor';
 import prisma from '../../primsaClient';
 import { makeGuild } from '../../util/test-utils/record-generator';
@@ -9,8 +10,8 @@ describe('ScheduledMessageProcessor', () => {
     earlier.setHours(earlier.getHours() - 1);
     const future = new Date(2099, 0, 1);
 
-    const mockChannel = { isTextBased: jest.fn(), send: jest.fn() };
-    const discordClientMock = { channels: { fetch: jest.fn() } };
+    const mockChannel = { isTextBased: vi.fn(), send: vi.fn() };
+    const discordClientMock = { channels: { fetch: vi.fn() } };
 
     const scheduledMessageProcessor = new ScheduledMessageProcessor(discordClientMock);
 
@@ -28,7 +29,7 @@ describe('ScheduledMessageProcessor', () => {
     });
 
     afterEach(() => {
-        jest.resetAllMocks();
+        vi.resetAllMocks();
     });
 
     afterAll(async () => {

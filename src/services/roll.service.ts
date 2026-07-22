@@ -37,7 +37,7 @@ export class RollService {
     }
 
     public formatValues({ numbers, sum, average }: RollResult): string {
-        const resultList = numbers.map(n => '## ' + n);
+        const resultList = numbers.map((n) => '## ' + n);
 
         const subtext = numbers.length > 1 ? `\nsum: ${sum}; average: ${average.toFixed(1)}` : '';
 

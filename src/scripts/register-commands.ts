@@ -9,7 +9,7 @@ export async function registerCommands() {
         console.log('Started refreshing application commands.');
 
         await rest.put(Routes.applicationCommands(config.clientId), {
-            body: commands.map(command => command.data),
+            body: commands.map((command) => command.data),
         });
 
         console.log('Successfully reloaded application commands.');

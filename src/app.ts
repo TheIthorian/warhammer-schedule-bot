@@ -1,4 +1,4 @@
-import { Events, PartialUser } from 'discord.js';
+import { Events } from 'discord.js';
 import { config } from './config';
 import { commandInteractionRouter } from './commands';
 import {
@@ -14,9 +14,9 @@ import http from 'http';
 
 const log = makeLogger(module);
 
-export async function start() {
-    const port = process.env.HEALTH_PORT || 8080;
-    http.createServer((req, res) => {
+export async function start(): Promise<void> {
+    const port = process.env['PORT'] ?? process.env['HEALTH_PORT'] ?? 8080;
+    http.createServer((_req, res) => {
         log.debug('received health request');
         res.writeHead(200);
         res.end('ok');
@@ -26,16 +26,29 @@ export async function start() {
 
     client.on(Events.ClientReady, () => {
         const clientUser = client.user;
+
+        if (!clientUser) {
+            log.error('ClientReady fired without a client user');
+            return;
+        }
+
         log.info({ userId: clientUser.id }, `Client Ready - logged in as ${clientUser.tag}!`);
         config.discordBotUserId = clientUser.id;
     });
 
-    client.on(Events.InteractionCreate, async interaction => {
+    client.on(Events.InteractionCreate, async (interaction) => {
         log.info('Events.InteractionCreate');
+
+        const { guildId } = interaction;
+
+        if (!guildId) {
+            log.info('Ignoring interaction outside of a guild');
+            return;
+        }
 
         try {
             const { id: guildConnectionId } = await createGuildConnectionIfNeeded({
-                guildId: interaction.guildId,
+                guildId,
                 userId: interaction.user.id,
                 connectionUserUsername: interaction.user.username,
             });
@@ -68,7 +81,10 @@ export async function start() {
         }
     });
 
-    client.login(config.botToken);
+    client.login(config.botToken).catch((error: unknown) => {
+        log.fatal(error, 'Failed to log in to Discord - exiting');
+        process.exit(1);
+    });
 
     const scheduledMessageProcessor = new ScheduledMessageProcessor(client);
     scheduledMessageProcessor.start();

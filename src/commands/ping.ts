@@ -1,4 +1,4 @@
-import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { CacheType, ChatInputCommandInteraction, SharedSlashCommand, SlashCommandBuilder } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
@@ -6,7 +6,7 @@ import { logContext, makeLogger } from '../util/logger';
 const log = makeLogger(module);
 
 export class PingCommand implements Command {
-    public readonly data: SlashCommandBuilder;
+    public readonly data: SharedSlashCommand;
 
     constructor() {
         this.data = new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!');

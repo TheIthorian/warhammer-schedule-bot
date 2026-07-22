@@ -1,5 +1,5 @@
 import { PollService } from '../services/poll.service';
-import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { CacheType, ChatInputCommandInteraction, SharedSlashCommand, SlashCommandBuilder } from 'discord.js';
 import { Command } from './types';
 import { getInteractionLogDetails } from '../util/interaction-info';
 import { logContext, makeLogger } from '../util/logger';
@@ -8,9 +8,12 @@ import { ScheduleService } from '../scheduling/schedule-service';
 const log = makeLogger(module);
 
 export class ScheduleCommand implements Command {
-    public readonly data: SlashCommandBuilder;
+    public readonly data: SharedSlashCommand;
 
-    constructor(private readonly partyScheduler: PollService, private readonly scheduleService: ScheduleService) {
+    constructor(
+        private readonly partyScheduler: PollService,
+        private readonly scheduleService: ScheduleService,
+    ) {
         this.data = new SlashCommandBuilder()
             .setName('schedule')
             .setDescription('Asks the group to schedule the next session');
@@ -20,7 +23,7 @@ export class ScheduleCommand implements Command {
         const ctx = logContext(
             `${ScheduleCommand.name}.${this.execute.name}`,
             getInteractionLogDetails(interaction),
-            log
+            log,
         );
 
         const { user, channelId } = interaction;

@@ -3,8 +3,17 @@ import { logContext, makeLogger } from '../util/logger';
 
 const log = makeLogger(module);
 
+function isQueryResponse(value: unknown): value is { generation: string } {
+    if (typeof value !== 'object' || value === null) return false;
+    if (!('generation' in value)) return false;
+    return typeof value.generation === 'string';
+}
+
 export class QueryService {
-    constructor(private readonly url: string, private readonly api: string) {}
+    constructor(
+        private readonly url: string | undefined,
+        private readonly api: string | undefined,
+    ) {}
 
     async runQuery(query?: string): Promise<{ content: string; ephemeral: boolean }> {
         const ctx = logContext(`${QueryService.name}.${this.runQuery.name}`, { query, url: this.url });
@@ -12,6 +21,11 @@ export class QueryService {
         if (!query) {
             log.info(`${ctx} No input provided`);
             return { content: 'Please provide an input', ephemeral: true };
+        }
+
+        if (!this.url) {
+            log.error(`${ctx} AI service URL is not configured`);
+            return { content: 'The AI service is not configured.', ephemeral: true };
         }
 
         const response = await fetch(this.url, {
@@ -33,7 +47,16 @@ export class QueryService {
             };
         }
 
-        const queryResponse: { generation: string } = await response.json();
+        const queryResponse: unknown = await response.json();
+
+        if (!isQueryResponse(queryResponse)) {
+            log.error({ queryResponse }, `${ctx} response body did not contain a string 'generation' field`);
+            return {
+                content: 'There was an error generating your response. Please try again later.',
+                ephemeral: true,
+            };
+        }
+
         log.debug(`${ctx} received response of length: ${queryResponse.generation.length}`);
         return { content: this.formatQueryResponse(query, queryResponse.generation), ephemeral: false };
     }

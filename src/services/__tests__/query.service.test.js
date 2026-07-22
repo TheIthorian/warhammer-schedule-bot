@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { QueryService } from '../query.service';
 
 describe('QueryService', () => {
@@ -6,15 +7,15 @@ describe('QueryService', () => {
     const queryService = new QueryService(apiUrl, apiKey);
 
     beforeEach(() => {
-        jest.resetAllMocks();
-        global.fetch = jest.fn();
+        vi.resetAllMocks();
+        global.fetch = vi.fn();
     });
 
     it('should make a successful query', async () => {
         const queryInput = 'exampleQuery';
         const mockResponse = {
             ok: true,
-            text: jest.fn().mockResolvedValue('Mocked response content'),
+            json: vi.fn().mockResolvedValue({ generation: 'Mocked response content' }),
         };
 
         fetch.mockResolvedValue(mockResponse);
@@ -42,7 +43,7 @@ describe('QueryService', () => {
         const queryInput = 'exampleQuery';
         const mockResponse = {
             ok: false,
-            text: jest.fn().mockResolvedValue('Error message'),
+            text: vi.fn().mockResolvedValue('Error message'),
         };
 
         fetch.mockResolvedValue(mockResponse);
@@ -70,15 +71,22 @@ describe('QueryService', () => {
         const queryInput = 'exampleQuery';
         const mockResponse = {
             ok: true,
-            text: jest.fn().mockResolvedValue(new Array(2000).fill('X').join('')),
+            json: vi.fn().mockResolvedValue({ generation: new Array(2000).fill('X').join('') }),
         };
 
         fetch.mockResolvedValue(mockResponse);
 
         const result = await queryService.runQuery(queryInput);
 
-        expect(fetch).toHaveBeenCalledWith(`${apiUrl}/query/${queryInput}`, {
-            headers: { api: apiKey },
+        expect(fetch).toHaveBeenCalledWith(apiUrl, {
+            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            method: 'POST',
+            body: JSON.stringify({
+                query: queryInput,
+                rerank: true,
+                filter: { scope: 'prod' },
+                msg: '',
+            }),
         });
 
         expect(result.content).toMatchSnapshot();

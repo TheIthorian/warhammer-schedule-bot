@@ -12,13 +12,13 @@ const interactionHandlers = {
     [InteractionType.MessageComponent]: new SelectOptionInteraction(
         pollService,
         scheduleService,
-        new AsciiPollResultsFormatter()
+        new AsciiPollResultsFormatter(),
     ),
 } as const;
 
 export const messageComponentInteractionRouter = new MessageComponentInteractionRouter(
     interactionHandlers,
-    new LinearSpamProtection(0.1)
+    new LinearSpamProtection(0.1),
 );
 
 export const messageReactAddHandler = new MessageReactAddHandler();

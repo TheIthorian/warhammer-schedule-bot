@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ScheduleService disablePoll replaces the message with disabled components when the channel is not cached 1`] = `
+exports[`ScheduleService > disablePoll > replaces the message with disabled components when the channel is not cached 1`] = `
 [
   {
     "components": [
@@ -61,7 +61,7 @@ exports[`ScheduleService disablePoll replaces the message with disabled componen
 ]
 `;
 
-exports[`ScheduleService disablePoll replaces the message with disabled components when the message is cached 1`] = `
+exports[`ScheduleService > disablePoll > replaces the message with disabled components when the message is cached 1`] = `
 [
   {
     "components": [
@@ -122,7 +122,7 @@ exports[`ScheduleService disablePoll replaces the message with disabled componen
 ]
 `;
 
-exports[`ScheduleService disablePoll replaces the message with disabled components when the message is not cached 1`] = `
+exports[`ScheduleService > disablePoll > replaces the message with disabled components when the message is not cached 1`] = `
 [
   {
     "components": [
@@ -183,7 +183,7 @@ exports[`ScheduleService disablePoll replaces the message with disabled componen
 ]
 `;
 
-exports[`ScheduleService getSchedulingMessageComponents should return the message components 1`] = `
+exports[`ScheduleService > getSchedulingMessageComponents > should return the message components 1`] = `
 {
   "components": [
     {
@@ -235,7 +235,7 @@ exports[`ScheduleService getSchedulingMessageComponents should return the messag
 }
 `;
 
-exports[`ScheduleService getSchedulingMessageComponents should return the message components 2`] = `
+exports[`ScheduleService > getSchedulingMessageComponents > should return the message components 2`] = `
 {
   "components": [
     {

@@ -10,6 +10,9 @@ import {
 import { PollService, pollService } from '../services/poll.service';
 import { DAYS_OF_THE_WEEK, DayOfTheWeek } from '../constants';
 import { client } from '../discord-client';
+import { makeLogger } from '../util/logger';
+
+const log = makeLogger(module);
 
 export type ValidatePollInProgressOutput = ValidatePollInProgressOutputTrue | ValidatePollInProgressOutputFalse;
 export type ValidatePollInProgressOutputTrue = { inProgress: true; reply: InteractionReplyOptions };
@@ -18,7 +21,10 @@ export type ValidatePollInProgressOutputFalse = { inProgress: false };
 const POLL_CREATION_TEXT = 'Hey everyone 👋 Please select the days that you are available next week';
 
 export class ScheduleService {
-    constructor(private readonly pollService: PollService, private readonly discordClient: Client) {}
+    constructor(
+        private readonly pollService: PollService,
+        private readonly discordClient: Client,
+    ) {}
 
     public async validatePollInProgress(guildConnectionId: number): Promise<ValidatePollInProgressOutput> {
         const [inProgressPoll] = await this.pollService.getInProgressPoll(guildConnectionId);
@@ -52,11 +58,17 @@ export class ScheduleService {
     public async disablePoll(channelId: string, messageId: string): Promise<void> {
         const channel =
             this.discordClient.channels.cache.get(channelId) || (await this.discordClient.channels.fetch(channelId));
+
+        if (!channel) {
+            log.error({ channelId }, 'Channel not found');
+            return;
+        }
+
         if (channel.isTextBased()) {
             const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
 
             const disabledDaysOfTheWeekMenuRow = daysOfTheWeekMenuRow();
-            disabledDaysOfTheWeekMenuRow.components.forEach(c => c.setDisabled(true));
+            disabledDaysOfTheWeekMenuRow.components.forEach((c) => c.setDisabled(true));
 
             await pollMessage.edit({
                 components: [disabledDaysOfTheWeekMenuRow],
@@ -72,14 +84,20 @@ export class ScheduleService {
         channelId: string;
         guildConnectionId: number;
     }): Promise<void> {
-        const channel = this.discordClient.channels.cache.get(input.channelId);
-        if (channel.isTextBased()) {
-            await this.pollService.addPollAnswer(input.guildConnectionId, {
-                userId: input.userId,
-                days: input.answer,
-                username: input.username,
-            });
+        await this.pollService.addPollAnswer(input.guildConnectionId, {
+            userId: input.userId,
+            days: input.answer,
+            username: input.username,
+        });
 
+        const channel = this.discordClient.channels.cache.get(input.channelId);
+
+        if (!channel) {
+            log.error({ channelId: input.channelId }, 'Channel not found in cache - cannot send thread notification');
+            return;
+        }
+
+        if (channel.isTextBased()) {
             const inProgressPoll = await this.pollService.getInProgressPoll(input.guildConnectionId);
             const messageId = inProgressPoll[0].messageId;
             const pollMessage = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
@@ -87,6 +105,11 @@ export class ScheduleService {
             const thread = pollMessage.hasThread
                 ? pollMessage.thread
                 : await pollMessage.startThread({ name: 'Responders' });
+
+            if (!thread) {
+                log.error({ channelId: input.channelId, messageId }, 'Poll message has no thread');
+                return;
+            }
 
             await thread.send(`${input.username} selected ${input.answer.join(', ')}`);
         }
@@ -99,7 +122,7 @@ function daysOfTheWeekMenuRow(): ActionRowBuilder<StringSelectMenuBuilder> {
         .setPlaceholder('Make a selection!')
         .setMinValues(0)
         .setMaxValues(7)
-        .addOptions(DAYS_OF_THE_WEEK.map(day => new StringSelectMenuOptionBuilder().setLabel(day).setValue(day)));
+        .addOptions(DAYS_OF_THE_WEEK.map((day) => new StringSelectMenuOptionBuilder().setLabel(day).setValue(day)));
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 
     return row;

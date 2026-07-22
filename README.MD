@@ -6,6 +6,8 @@ https://discordjs.guide/creating-your-bot/command-deployment.html#guild-commands
 
 ## Setting environment variables
 
+Copy `.env.example` to `.env` and fill it in:
+
 ```sh
 APPLICATION_ID= # Application Id from creating discord bot
 PUBLIC_KEY= # Public key from creating discord bot
@@ -17,35 +19,43 @@ CLIENT_SECRET= # Idk where this came from ??
 AI_SERVICE_URL= # Url for the ai service
 AI_SERVICE_API_KEY= # Application key for the ai service
 
-DATABASE_URL="file:./dev.db" # Database to store persistent data
-TEST_DATABASE_URL="file:./dev.test.db" # Test database swapped out during tests
+DATABASE_URL="postgresql://root:password@localhost:55432/gm_sidekick?schema=public" # Postgres connection string
 
 ADMIN_USERS='' # Comma delimited list of users who are admins. Have increased permissions.
 ```
 
-## Running
+Running the test suite also needs `.env.test` (copy `.env.test.example`). It sets `TEST_DATABASE_URL`, which
+`src/config.ts` swaps in for `DATABASE_URL` whenever `NODE_ENV=test`. **Both files point at the same local Postgres
+database as development** — there is no separate test database. Tests are only safe because each one scopes its
+`deleteMany` cleanup to a freshly generated `guildConnectionId`. Any new test that writes to the database must do the
+same, or it will delete local development data.
+
+## Running locally
 
 ```sh
-npm i
-npm start
+pnpm install
+docker compose up -d db
+pnpm db:migrate
+pnpm dev
 ```
+
+Or run the whole stack in containers. Copy `.docker.env.example` to `.docker.env` and fill it in, then:
+
+```sh
+docker compose up --build
+```
+
+Postgres data is stored in `./.data/postgres` on the host.
 
 ## Deploying
 
-First, the commands need to be uploaded to discord
+Push to `master`. Railway builds the Dockerfile and deploys automatically. Migrations apply on container start.
+
+Slash commands are registered separately, and only need re-running when a command's definition changes:
 
 ```sh
-npm run deploy-commands
+pnpm deploy-commands
 ```
-
-Deploy to digital ocean (this will be done automatically on push to `master`)
-
-```sh
-docker build . -t theithorian/gm-sidekick:latest
-docker push theithorian/gm-sidekick:latest
-```
-
-Go to https://cloud.digitalocean.com/apps/a3b323de-7f34-4e2a-b131-59946c59e2f2?i=244b97 and deploy latest image
 
 ## Commands
 
@@ -74,4 +84,4 @@ Usa AI to search pdf https://github.com/imartinez/privateGPT
 
 ## Project
 
-app: https://cloud.digitalocean.com/apps/a3b323de-7f34-4e2a-b131-59946c59e2f2/settings?i=244b97
+Hosted on Railway. See `CLAUDE.md` for the deployment and architecture notes.

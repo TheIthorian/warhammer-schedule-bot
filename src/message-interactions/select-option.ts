@@ -13,17 +13,17 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
     constructor(
         private readonly pollService: PollService,
         private readonly scheduleService: ScheduleService,
-        private readonly pollResultsFormatter: PollResultsFormatter
+        private readonly pollResultsFormatter: PollResultsFormatter,
     ) {}
 
     async execute(
         interaction: AnySelectMenuInteraction<CacheType> | ButtonInteraction<CacheType>,
-        guildConnectionId: number
+        guildConnectionId: number,
     ): Promise<void> {
         const ctx = logContext(
             `${SelectOptionInteraction.name}.${this.execute.name}`,
             { ...getInteractionLogDetails(interaction), messageId: interaction.message.id },
-            log
+            log,
         );
 
         if (!(await this.pollService.isExistPollInProgress(guildConnectionId))) {
@@ -44,12 +44,12 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
 
     private async handleChannelSelectMenu(
         interaction: AnySelectMenuInteraction<CacheType>,
-        guildConnectionId: number
+        guildConnectionId: number,
     ): Promise<void> {
         const ctx = logContext(
             `${SelectOptionInteraction.name}.${this.handleChannelSelectMenu.name}`,
             { ...getInteractionLogDetails(interaction), messageId: interaction.message.id },
-            log
+            log,
         );
 
         await this.scheduleService.addPollResponse({
@@ -63,7 +63,14 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
         log.info(`${ctx} poll answer added.`);
         await interaction.reply({ content: `You have selected ${interaction.values.join(', ')}!`, ephemeral: true });
 
-        if (await this.pollService.hasEveryoneResponded(guildConnectionId, interaction.guild.memberCount)) {
+        const { guild } = interaction;
+
+        if (!guild) {
+            log.error(`${ctx} interaction has no guild - cannot check whether everyone has responded`);
+            return;
+        }
+
+        if (await this.pollService.hasEveryoneResponded(guildConnectionId, guild.memberCount)) {
             log.info(`${ctx} everyone has responded.`);
             await interaction.followUp({ content: 'Everyone has replied! You may close the poll' });
         }
@@ -71,12 +78,12 @@ export class SelectOptionInteraction implements MessageComponentInteractionHandl
 
     private async handleButtonClick(
         interaction: ButtonInteraction<CacheType>,
-        guildConnectionId: number
+        guildConnectionId: number,
     ): Promise<void> {
         const ctx = logContext(
             `${SelectOptionInteraction.name}.${this.handleButtonClick.name}`,
             { ...getInteractionLogDetails(interaction), messageId: interaction.message.id },
-            log
+            log,
         );
 
         await this.scheduleService.disablePoll(interaction.channelId, interaction.message.id);
