@@ -209,3 +209,14 @@ runner    node:24-alpine, NODE_ENV=production, prod deps + dist/ + prisma/ + gen
 5. `docker compose up` → app boots, health endpoint returns 200
 6. Railway deploy succeeds; bot comes online in Discord and `/ping` responds
 7. DigitalOcean app and Docker Hub repo torn down only after step 6 passes
+
+## Accepted Tradeoffs (recorded during implementation)
+
+**Scheduled messages to a missing channel are not retried.** `ScheduledMessageProcessor.processMessage` guards a
+null or non-text-based channel by logging at `error` and returning. Because the caller then marks the message
+`processed`, this bypasses the `processFailedMessage` retry ladder that a thrown error would have triggered — a
+transient Discord fetch failure loses the reminder rather than retrying it up to three times.
+
+Reviewed and accepted: a message to a deleted channel is genuinely undeliverable, and retrying it three times is
+wasted work and log noise. The failure is logged with the message id and channel id, so it is visible rather than
+silent.

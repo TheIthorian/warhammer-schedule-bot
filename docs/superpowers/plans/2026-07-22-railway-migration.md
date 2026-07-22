@@ -744,11 +744,14 @@ data is ephemeral, so the history is rebuilt from the current schema."
         "noEmit": false,
         "sourceMap": false,
         "declaration": false,
-        "declarationMap": false
+        "declarationMap": false,
+        "types": ["node"]
     },
     "exclude": ["node_modules", "dist", "src/**/__test__/**", "src/**/__tests__/**", "src/util/test-utils/**"]
 }
 ```
+
+The `types` override matters. Task 4 set `"types": ["node", "vitest/globals"]` in the base `tsconfig.json` so test files typecheck without a separate config. `types` **replaces** rather than extends, so the production build must drop `vitest/globals` — otherwise `describe`, `expect`, and `vi` are in scope for every production module and a stray `expect()` in `src/services/` would compile.
 
 - [ ] **Step 2: Verify the build produces runnable output**
 
