@@ -85,3 +85,8 @@ Usa AI to search pdf https://github.com/imartinez/privateGPT
 ## Project
 
 Hosted on Railway. See `CLAUDE.md` for the deployment and architecture notes.
+
+## License
+
+[PolyForm Noncommercial 1.0.0](LICENSE.md). Free to use, modify and share for personal, hobby, educational and other
+noncommercial purposes. Commercial use is not permitted.
