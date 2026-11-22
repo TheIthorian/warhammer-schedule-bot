@@ -10,6 +10,7 @@
     "bugs": {
         "url": "https://github.com/TheIthorian/warhammer-schedule-bot/issues"
     },
+    "license": "PolyForm-Noncommercial-1.0.0",
     "author": "TheIthorian",
     "repository": {
         "type": "git",
